@@ -5,6 +5,8 @@ display: flex;
 }
 .localStreamContainer {
   width: 150px;
+  display: flex;
+  flex-direction: column;
 }
 #localView {
   height: 150px;
@@ -32,15 +34,15 @@ display: flex;
 
 .rightContainer {
   margin-left: 50px;
-  flex: 1 1;
   display: flex;
   flex-direction: column;
+  width: 40vw;
 }
 
 .remoteStreamContainer {
-  flex: 1;
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start;
 }
 .remoteStreamItem {
   position: relative;
@@ -67,12 +69,10 @@ display: flex;
 }
 .join {
   width: 100%;
-    height: 40px;
-    margin-left: 12px;;
+  height: 40px;
 }
 .input {
   height: 26px;
-  margin-left: 12px;
 }
 .remoteStream {
   height: 200px;
@@ -159,5 +159,45 @@ display: flex;
   background: white;
 }
 .box {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  flex-direction: row;
+  padding: 16px;
+  box-sizing: border-box;
+}
+.slides-container {
+  display: flex;
+  padding: 10px;
+  background: white;
+  box-sizing: border-box;
+  resize: horizontal;
+  border: 1px dashed;
+  overflow: auto;
+  max-width: 100%;
+  height: 80vh;
+  flex: 1;
+  position: relative;
+
+}
+.slides-container > .btn-next-prev {
+  position: absolute;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
+}
+.slides-container > .btn-next-prev button {
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  margin: 10px;
+}
+.slides-container > .slide-img {
+  width: 100%;
+  padding-bottom: 75%;
+  background: gold;
+  background-repeat: no-repeat;
+  background-size: cover
 }

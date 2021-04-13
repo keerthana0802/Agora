@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import VideocamIcon from '@material-ui/icons/Videocam';
 import VideocamOffIcon from '@material-ui/icons/VideocamOff';
 import MicIcon from '@material-ui/icons/Mic';
 import MicOffIcon from '@material-ui/icons/MicOff';
-import SpeakerIcon from '@material-ui/icons/Speaker';
+// import SpeakerIcon from '@material-ui/icons/Speaker';
 import speakingIcon from '@material-ui/icons/RecordVoiceOver'
 
 const RemoteStream = (props) => {
