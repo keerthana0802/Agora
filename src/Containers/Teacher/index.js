@@ -1,6 +1,7 @@
 import React from 'react';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import '../../App.css';
+import './Styles/TeacherSyles.css'
 import RemoteStream from '../../Components/RemoteStream';
 
 import VideocamIcon from '@material-ui/icons/Videocam';
@@ -483,20 +484,20 @@ class Teacher extends React.Component {
     ctrl[type] = !value;
     tuteControls[id] = ctrl;
 
-    this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'av': JSON.stringify(tuteControls) }).then(res => {
-      console.log(" =>> AV updated successfully!");
-      let text = JSON.stringify({ type, value: !value });
-      this.RTMClient.sendMessageToPeer(
-        { text }, id.toString())
-        .then(result => {
-          console.log("sendResult =>>", result);
-          if (result.hasPeerReceived) {
-            this.setState({ tuteControls });
-          }
-        }).catch(error => {
-          console.log("failed to send peer meg", error);
-        })
-    })
+    //this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'av': JSON.stringify(tuteControls) }).then(res => {
+    //  console.log(" =>> AV updated successfully!");
+    let text = JSON.stringify({ type, value: !value });
+    this.RTMClient.sendMessageToPeer(
+      { text }, id.toString())
+      .then(result => {
+        console.log("sendResult =>>", result);
+        if (result.hasPeerReceived) {
+          this.setState({ tuteControls });
+        }
+      }).catch(error => {
+        console.log("failed to send peer meg", error);
+      })
+    //})
   }
 
   getChannelAttr = () => {
@@ -506,6 +507,7 @@ class Teacher extends React.Component {
       console.log("failed to get channel attrs", error);
     })
   }
+
 
   leaveChannel = () => {
     this.RTMChannel.leave().then(() => {
@@ -521,18 +523,54 @@ class Teacher extends React.Component {
       console.log("=>> Error on leaving channel ", error);
     })
   }
-
+  handleShow = slideid => {
+     if(this.state.activeSlideId) {
+      slideid = null
+    }
+    this.onSlideChange(slideid)
+  }
   toggleProfile = (event) => {
     let value = event.target.value;
     this.setVideoProfile(value);
   }
 
+  onSlideChange = (slideid=1) => {
+    let that = this
+    this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'activeSlideId': `${slideid}` }).then(res => {
+      console.log(" =>> activeSlideId updated successfully!");
+      let text = JSON.stringify({ type:'slide', slideid  });
+      //sendMessage({text: data}).then(() => {
+      that.RTMChannel.sendMessage(
+        { text })
+        .then(result => {
+          that.setState({activeSlideId: slideid})
+          console.log("send Message =>>", result);
+        }).catch(error => {
+          console.log("failed to send peer meg", error);
+        })
+    })
+  }
+
+  
   render() {
     const { remoteStreams, rtmLoggedIn, rtmChannelJoined, tuteControls, speakers } = this.state;
     console.log("streams =>>", remoteStreams);
     console.log("Speaker =>>", speakers);
+    let slides = [{
+      id: 1, image: 'http://passyworldofmathematics.com/Images/pwmImagesFour/PythagGuitarDiag1250wideJPG.jpg'},
+      {id: 2, image: 'https://i.pinimg.com/564x/0e/99/e3/0e99e301ab31095fbed0f737f40870df.jpg'},
+      {id: 3, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Yousician-Guitar-learning-app-Android.jpg'},
+      {id:  4, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Guitar-Plus.png'}]
+
     return (
-      <div className="App">
+      <div className="teacher-container">
+        {rtmChannelJoined && <div className='header'>
+           <button className='btn-card' onClick={() => this.handleShow(1)}>
+            {this.state.activeSlideId ? 'End Slides': 'Slides Show' }
+          </button>
+          <button className="btn-card" onClick={this.leaveChannel}>End Session</button>
+        </div>}
+        <div className='main-container'>
         <div className="localStreamContainer">
           <input className="input" value={this.state.uid} onChange={(e) => this.setState({ uid: e.target.value })} placeholder="enter user name" />
           <div id="localView" ref={this.localVideoView}></div>
@@ -541,12 +579,21 @@ class Teacher extends React.Component {
             <div className="controlIcon" onClick={() => this.toggleTrack("audio")}>{this.state.localAudio ? <MicIcon fontSize="large" /> : <MicOffIcon fontSize="large" />}</div>
           </div>
           {!rtmLoggedIn && <button className="join" onClick={this.loginToRTM}>Join</button>}
-          {rtmChannelJoined && <button className="join" onClick={this.leaveChannel}>End Session</button>}
+          
        </div>
         <div className="rightContainer">
           <div className="remoteStreamContainer">
             {Object.keys(remoteStreams).map((item, index) => <RemoteStream speaking={speakers.indexOf(item) > -1} key={item} isTute={this.state.isTute} onAVChange={this.onAVChange} tuteControls={tuteControls[item]} stream={remoteStreams[item]} id={item} />)}
           </div>
+        </div>
+        
+        {rtmLoggedIn && this.state.activeSlideId && <div className ='slides-container'>
+          <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
+          <div className='btn-next-prev'>
+            <button disabled={this.state.activeSlideId === 1} onClick={() => this.onSlideChange(this.state.activeSlideId-1)}> {'<'} </button>
+            <button disabled={slides.length === this.state.activeSlideId} onClick={() => this.onSlideChange(this.state.activeSlideId+1)}> {'>'}</button>
+            </div>
+        </div>}
         </div>
       </div>
     );

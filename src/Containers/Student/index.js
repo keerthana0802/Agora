@@ -8,13 +8,14 @@ import VideocamOffIcon from '@material-ui/icons/VideocamOff';
 import MicIcon from '@material-ui/icons/Mic';
 import MicOffIcon from '@material-ui/icons/MicOff';
 import AgoraRTM from 'agora-rtm-sdk';
+import _get from 'lodash/get'
 
 
-var videoProfiles = [
-  { label: "120p_1", detail: "120p_1, 160×120, 15fps, 65Kbps", value: "120p_1" },
-  { label: "180p_1", detail: "180p_1, 320×180, 15fps, 140Kbps", value: "180p_1" },
-  { label: "240p_1", detail: "240p_1, 320×240, 15fps, 200Kbps", value: "240p_1" }
-]
+// var videoProfiles = [
+//   { label: "120p_1", detail: "120p_1, 160×120, 15fps, 65Kbps", value: "120p_1" },
+//   { label: "180p_1", detail: "180p_1, 320×180, 15fps, 140Kbps", value: "180p_1" },
+//   { label: "240p_1", detail: "240p_1, 320×240, 15fps, 200Kbps", value: "240p_1" }
+// ]
 
 
 class Student extends React.Component {
@@ -25,6 +26,7 @@ class Student extends React.Component {
       remoteStreams: {
 
       },
+      connectionState: 'LOADING',
       localVideo: true,
       localAudio: true,
       videoPublished: false,
@@ -173,8 +175,12 @@ class Student extends React.Component {
   }
 
   subscribeChannelEvents = () => {
-    this.RTMChannel.on('ChannelMessage', (message, memberId) => {
-      console.log("ChannelMessage =>>", message, memberId)
+    this.RTMChannel.on('ChannelMessage', ({text}, memberId) => {
+      console.log("ChannelMessage =>>", text, memberId)
+      let json = JSON.parse(text);
+      if(json.type === 'slide') {
+        this.setState({activeSlideId:json.slideid})
+      }
     })
     this.RTMChannel.on('MemberJoined', (memberId) => {
       console.log("MemberJoined =>>", memberId)
@@ -192,15 +198,36 @@ class Student extends React.Component {
 
 
   subscribeClientEvents = () => {
-    this.RTMClient.on('ConnectionStateChanged', (event) => {
-      console.log("ConnectionStateChanged =>>", event)
+    this.RTMClient.on('ConnectionStateChanged', (newState, reason) => {
+      console.log("ConnectionStateChanged =>>", newState,reason )
+      if (newState === 'CONNECTED') {
+        if(this.RTMClient.getChannelAttributesByKeys) {
+          this.RTMClient.getChannelAttributesByKeys(`${this.channel}`, ['activeSlideId']).then(data => {
+            let activeSlideId = _get(data, 'activeSlideId.value') || ''
+            if(!activeSlideId) return
+            activeSlideId = JSON.parse(activeSlideId)
+            console.log('activeSlideId', activeSlideId)
+            if(!this.state.activeSlideId) {
+              this.setState({activeSlideId})
+            }
+           
+          })
+        }
+      }
+      this.setState({
+        connectionState: newState
+      });
     })
     this.RTMClient.on('MessageFromPeer', (message, peerId) => {
       console.log("MessageFromPeer =>>", message, peerId)
       let data = JSON.parse(message.text);
       console.log("=>> msg", data);
       if (data.value === false) {
-        this.muteUser(data.type);
+        this.muteUser(data.type, false);
+      } else {
+        if(window.confirm(`Teacher: Can you please ${data.type} on`)) {
+          this.muteUser(data.type, true);
+        }
       }
       let tuteAVControls = { ...this.state.tuteAVControls };
       tuteAVControls[data.type] = data.value;
@@ -209,17 +236,17 @@ class Student extends React.Component {
     })
   }
 
-  muteUser = (type) => {
+  muteUser = (type, action) => {
     if (type === 'audio') {
-      if (this.state.localAudio) {
-        this.audioTrack.setEnabled(false);
-        this.setState({ localAudio: false });
-      }
+      // if (this.state.localAudio) {
+        this.audioTrack.setEnabled(action);
+        this.setState({ localAudio: action });
+      // }
     } else if (type === 'video') {
-      if (this.state.localVideo) {
-        this.videoTrack.setEnabled(false);
-        this.setState({ localVideo: false });
-      }
+      // if (this.state.localVideo) {
+        this.videoTrack.setEnabled(action);
+        this.setState({ localVideo: action });
+      // }
     }
   }
 
@@ -436,7 +463,7 @@ class Student extends React.Component {
     if (this.RTCClient !== null) {
       this.RTCClient.join(this.appId, this.channel, null, this.state.uid).then(uid => {
         this.rtm.params.uid = uid;
-
+        this.subscribeChannelEvents()
         this.RTCClient.enableDualStream().then(() => {
           console.log("Enable Dual stream success!");
         }).catch(err => {
@@ -538,6 +565,11 @@ class Student extends React.Component {
     const { remoteStreams, rtmLoggedIn, rtmChannelJoined, tuteControls, speakers } = this.state;
     console.log("streams =>>", remoteStreams);
     console.log("Speaker =>>", speakers);
+    let slides = [{
+      id: 1, image: 'http://passyworldofmathematics.com/Images/pwmImagesFour/PythagGuitarDiag1250wideJPG.jpg'},
+      {id: 2, image: 'https://i.pinimg.com/564x/0e/99/e3/0e99e301ab31095fbed0f737f40870df.jpg'},
+      {id: 3, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Yousician-Guitar-learning-app-Android.jpg'},
+      {id:  4, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Guitar-Plus.png'}]
     return (
       <div class="box">
         <div class="right">
@@ -591,23 +623,6 @@ class Student extends React.Component {
             </div>
 
             <div className="rightContainer">
-              <div className="info">
-                <div style={{ marginRight: "10px" }}>
-                  Count: {Object.keys(remoteStreams).length}
-                </div>
-                | Video profile
-                <select
-                  style={{ marginLeft: "10px" }}
-                  value={this.state.selectedProfile}
-                  onChange={this.toggleProfile}
-                >
-                  {videoProfiles.map((item) => (
-                    <option value={item.value} key={item.label}>
-                      {item.detail}
-                    </option>
-                  ))}
-                </select>
-              </div>
               <div className="remoteStreamContainer">
                 {Object.keys(remoteStreams).map((item, index) => (
                   <RemoteStream
@@ -624,7 +639,9 @@ class Student extends React.Component {
             </div>
           </div>
         </div>
-        <div class="left"></div>
+        {this.state.activeSlideId && <div className ='slides-container'>
+          <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
+        </div>}
       </div>
     );
   }
