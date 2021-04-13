@@ -223,7 +223,11 @@ class Student extends React.Component {
       let data = JSON.parse(message.text);
       console.log("=>> msg", data);
       if (data.value === false) {
-        this.muteUser(data.type);
+        this.muteUser(data.type, false);
+      } else {
+        if(window.confirm(`Teacher: Can you please ${data.type} on`)) {
+          this.muteUser(data.type, true);
+        }
       }
       let tuteAVControls = { ...this.state.tuteAVControls };
       tuteAVControls[data.type] = data.value;
@@ -232,17 +236,17 @@ class Student extends React.Component {
     })
   }
 
-  muteUser = (type) => {
+  muteUser = (type, action) => {
     if (type === 'audio') {
-      if (this.state.localAudio) {
-        this.audioTrack.setEnabled(false);
-        this.setState({ localAudio: false });
-      }
+      // if (this.state.localAudio) {
+        this.audioTrack.setEnabled(action);
+        this.setState({ localAudio: action });
+      // }
     } else if (type === 'video') {
-      if (this.state.localVideo) {
-        this.videoTrack.setEnabled(false);
-        this.setState({ localVideo: false });
-      }
+      // if (this.state.localVideo) {
+        this.videoTrack.setEnabled(action);
+        this.setState({ localVideo: action });
+      // }
     }
   }
 

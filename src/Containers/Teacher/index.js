@@ -484,20 +484,20 @@ class Teacher extends React.Component {
     ctrl[type] = !value;
     tuteControls[id] = ctrl;
 
-    this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'av': JSON.stringify(tuteControls) }).then(res => {
-      console.log(" =>> AV updated successfully!");
-      let text = JSON.stringify({ type, value: !value });
-      this.RTMClient.sendMessageToPeer(
-        { text }, id.toString())
-        .then(result => {
-          console.log("sendResult =>>", result);
-          if (result.hasPeerReceived) {
-            this.setState({ tuteControls });
-          }
-        }).catch(error => {
-          console.log("failed to send peer meg", error);
-        })
-    })
+    //this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'av': JSON.stringify(tuteControls) }).then(res => {
+    //  console.log(" =>> AV updated successfully!");
+    let text = JSON.stringify({ type, value: !value });
+    this.RTMClient.sendMessageToPeer(
+      { text }, id.toString())
+      .then(result => {
+        console.log("sendResult =>>", result);
+        if (result.hasPeerReceived) {
+          this.setState({ tuteControls });
+        }
+      }).catch(error => {
+        console.log("failed to send peer meg", error);
+      })
+    //})
   }
 
   getChannelAttr = () => {
@@ -587,7 +587,7 @@ class Teacher extends React.Component {
           </div>
         </div>
         
-        {this.state.activeSlideId && <div className ='slides-container'>
+        {rtmLoggedIn && this.state.activeSlideId && <div className ='slides-container'>
           <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
           <div className='btn-next-prev'>
             <button disabled={this.state.activeSlideId === 1} onClick={() => this.onSlideChange(this.state.activeSlideId-1)}> {'<'} </button>

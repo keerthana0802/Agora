@@ -14,7 +14,10 @@ display: flex;
   border: 1px solid gray;
   border-radius: 10px;
   overflow: hidden;
-  margin-left: 12px;
+  /*margin-left: 12px;*/
+}
+.cursor {
+  cursor: pointer;
 }
 
 .controls {
