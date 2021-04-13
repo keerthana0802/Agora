@@ -539,34 +539,92 @@ class Student extends React.Component {
     console.log("streams =>>", remoteStreams);
     console.log("Speaker =>>", speakers);
     return (
-      <div className="App">
-        <div className="localStreamContainer">
-          <input className="input" value={this.state.uid} onChange={(e) => this.setState({ uid: e.target.value })} placeholder="enter user name" />
-          <div id="localView" ref={this.localVideoView}></div>
-          <div className="controls">
-            <div className="controlIcon" onClick={() => this.toggleTrack("video")}>{this.state.localVideo ? <VideocamIcon fontSize="large" /> : <VideocamOffIcon fontSize="large" />}</div>
-            <div className="controlIcon" onClick={() => this.toggleTrack("audio")}>{this.state.localAudio ? <MicIcon fontSize="large" /> : <MicOffIcon fontSize="large" />}</div>
+      <div class="box">
+        <div class="right">
+          <div className="App">
+            <div className="localStreamContainer">
+              <input
+                className="input"
+                value={this.state.uid}
+                onChange={(e) => this.setState({ uid: e.target.value })}
+                placeholder="enter user name"
+              />
+              <div id="localView" ref={this.localVideoView}></div>
+
+              <div className="controls">
+                <div
+                  className="controlIcon"
+                  onClick={() => this.toggleTrack("video")}
+                >
+                  {this.state.localVideo ? (
+                    <VideocamIcon fontSize="large" />
+                  ) : (
+                    <VideocamOffIcon fontSize="large" />
+                  )}
+                </div>
+                <div
+                  className="controlIcon"
+                  onClick={() => this.toggleTrack("audio")}
+                >
+                  {this.state.localAudio ? (
+                    <MicIcon fontSize="large" />
+                  ) : (
+                    <MicOffIcon fontSize="large" />
+                  )}
+                </div>
+              </div>
+              {!rtmLoggedIn && (
+                <button className="join" onClick={this.loginToRTM}>
+                  Login RTM
+                </button>
+              )}
+              {/* {rtmLoggedIn && !rtmChannelJoined && <button className="join" onClick={this.joinSessionChannel}>Join Channel</button>} */}
+              {rtmChannelJoined && (
+                <button className="join" onClick={this.leaveChannel}>
+                  Leave Channel
+                </button>
+              )}
+              {/* <button className="join" onClick={this.getChannelCount}>Member count</button> */}
+              {/* <button className="join" onClick={this.getUserAttr}>Get user Attr</button> */}
+              {/* <button className="join" onClick={this.disableMe}>mark me as disabled</button> */}
+              {/* <button className="join" onClick={this.getChannelAttr}>Get channel attr</button> */}
+            </div>
+
+            <div className="rightContainer">
+              <div className="info">
+                <div style={{ marginRight: "10px" }}>
+                  Count: {Object.keys(remoteStreams).length}
+                </div>
+                | Video profile
+                <select
+                  style={{ marginLeft: "10px" }}
+                  value={this.state.selectedProfile}
+                  onChange={this.toggleProfile}
+                >
+                  {videoProfiles.map((item) => (
+                    <option value={item.value} key={item.label}>
+                      {item.detail}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="remoteStreamContainer">
+                {Object.keys(remoteStreams).map((item, index) => (
+                  <RemoteStream
+                    speaking={speakers.indexOf(item) > -1}
+                    key={item}
+                    isTute={this.state.isTute}
+                    onAVChange={this.onAVChange}
+                    tuteControls={tuteControls[item]}
+                    stream={remoteStreams[item]}
+                    id={item}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
-          {!rtmLoggedIn && <button className="join" onClick={this.loginToRTM}>Login RTM</button>}
-          {/* {rtmLoggedIn && !rtmChannelJoined && <button className="join" onClick={this.joinSessionChannel}>Join Channel</button>} */}
-          {rtmChannelJoined && <button className="join" onClick={this.leaveChannel}>Leave Channel</button>}
-          {/* <button className="join" onClick={this.getChannelCount}>Member count</button> */}
-          {/* <button className="join" onClick={this.getUserAttr}>Get user Attr</button> */}
-          {/* <button className="join" onClick={this.disableMe}>mark me as disabled</button> */}
-          {/* <button className="join" onClick={this.getChannelAttr}>Get channel attr</button> */}
         </div>
-        <div className="rightContainer">
-          <div className="info">
-            <div style={{ marginRight: "10px" }}>Count: {Object.keys(remoteStreams).length}</div>
-            | Video profile
-            <select style={{ marginLeft: "10px" }} value={this.state.selectedProfile} onChange={this.toggleProfile}>
-              {videoProfiles.map(item => <option value={item.value} key={item.label}>{item.detail}</option>)}
-            </select>
-          </div>
-          <div className="remoteStreamContainer">
-            {Object.keys(remoteStreams).map((item, index) => <RemoteStream speaking={speakers.indexOf(item) > -1} key={item} isTute={this.state.isTute} onAVChange={this.onAVChange} tuteControls={tuteControls[item]} stream={remoteStreams[item]} id={item} />)}
-          </div>
-        </div>
+        <div class="left"></div>
       </div>
     );
   }
