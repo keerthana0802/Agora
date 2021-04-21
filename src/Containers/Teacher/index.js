@@ -48,9 +48,9 @@ class Teacher extends React.Component {
     this.RTCClient = null;
     this.RTMClient = null;
 
-    this.channel = "demo_web";
+    this.channel = "web_share";
     this.localVideoView = React.createRef();
-    this.appId = "9a9c916dff6447c8922914cd2e2eab80";
+    this.appId = "a5431333004841fea39dc13668e92113";
 
 
     this.rtm = {
@@ -123,6 +123,8 @@ class Teacher extends React.Component {
     }).catch(error => {
       console.log(" =>> failed to login RTM", error)
     })
+
+    
   }
 
   getAVStates = async () => {
@@ -222,6 +224,7 @@ class Teacher extends React.Component {
       // [this.audioTrack, this.videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
       this.videoTrack = await AgoraRTC.createCameraVideoTrack({ encoderConfig: this.state.selectedProfile });
       this.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+  
       // this.videoTrack.setOptimizationMode("motion");
       this.videoTrack.play(this.localVideoView.current);
     } catch (error) {
@@ -295,12 +298,23 @@ class Teacher extends React.Component {
       mode: 'rtc',
       codec: 'vp8'
     })
+    this.screenClient = AgoraRTC.createClient({
+      mode: 'rtc',
+      codec: 'vp8'
+    })
     this.subscribeEvents();
   }
 
   subscribeEvents = () => {
     this.RTCClient.on('user-published', this.userPublished);
     this.RTCClient.on('user-unpublished', this.userUnPublished);
+    this.RTCClient.on('stream-subscribed', (evt) => {
+      console.log('stream-subscribed', evt)
+    })
+     this.RTCClient.on('stopScreenSharing', ()=> {
+      this.screenTrack.stop();
+      this.screenTrack.close();
+    })
     this.RTCClient.on('user-left', this.userLeft);
     this.RTCClient.on('user-joined', this.userJoined);
     this.RTCClient.enableAudioVolumeIndicator();
@@ -309,8 +323,8 @@ class Teacher extends React.Component {
   }
 
   networkQuality = (stats) => {
-    console.log("=>> downlinkNetworkQuality", stats.downlinkNetworkQuality);
-    console.log("=>> uplinkNetworkQuality", stats.uplinkNetworkQuality);
+    // console.log("=>> downlinkNetworkQuality", stats.downlinkNetworkQuality);
+    // console.log("=>> uplinkNetworkQuality", stats.uplinkNetworkQuality);
     let networkQuality = this.state.networkQuality;
     let newNetworkQuality = stats.uplinkNetworkQuality;
     if (newNetworkQuality > 0 && networkQuality !== newNetworkQuality) {
@@ -323,8 +337,8 @@ class Teacher extends React.Component {
       }
       this.setState({ networkQuality: newNetworkQuality })
     }
-    let rcstats = this.RTCClient.getRTCStats();
-    console.log("=>> RC Stats", rcstats)
+    // let rcstats = this.RTCClient.getRTCStats();
+    // console.log("=>> RC Stats", rcstats)
   }
 
 
@@ -337,7 +351,7 @@ class Teacher extends React.Component {
 
   volumeIndicator = async (volumes) => {
     volumes.forEach((volume, index) => {
-      console.log(` =>> ${index} UID ${volume.uid} Level ${volume.level}`);
+      // console.log(` =>> ${index} UID ${volume.uid} Level ${volume.level}`);
       if (volume.level >= 5) {
         this.updateSpeaker(volume.uid);
       }
@@ -430,7 +444,6 @@ class Teacher extends React.Component {
     if (this.RTCClient !== null) {
       this.RTCClient.join(this.appId, this.channel, null, this.state.uid).then(uid => {
         this.rtm.params.uid = uid;
-
         this.RTCClient.enableDualStream().then(() => {
           console.log("Enable Dual stream success!");
         }).catch(err => {
@@ -444,7 +457,7 @@ class Teacher extends React.Component {
           this.publishTrack(this.audioTrack);
         }
       }).catch(error => {
-        console.log("failed to join channel ", error);
+       console.log("failed to join channel ", error);
       })
     }
   }
@@ -489,15 +502,14 @@ class Teacher extends React.Component {
     let text = JSON.stringify({ type, value: !value });
     this.RTMClient.sendMessageToPeer(
       { text }, id.toString())
-      .then(result => {
-        console.log("sendResult =>>", result);
-        if (result.hasPeerReceived) {
-          this.setState({ tuteControls });
-        }
-      }).catch(error => {
-        console.log("failed to send peer meg", error);
-      })
-    //})
+    .then(result => {
+      console.log("sendResult =>>", result);
+      if (result.hasPeerReceived) {
+        this.setState({ tuteControls });
+      }
+    }).catch(error => {
+      console.log("failed to send peer meg", error);
+    })
   }
 
   getChannelAttr = () => {
@@ -551,11 +563,39 @@ class Teacher extends React.Component {
     })
   }
 
+   initLocalScreenStream = async () => {
+    if(this.RTCClient) {
+      this.shareClient = AgoraRTC.createClient({ mode:'rtc',  codec: 'vp8'});
+      this.shareClient.join(this.appId,this.channel, null, `${this.state.uid}-shareScreen`).then(uid => {
+      AgoraRTC.createScreenVideoTrack({encoderConfig: "1080p_1"}
+        ).then(localScreenTrack => {
+          // localScreenTrack.play('local_stream')
+          this.shareClient.publish(localScreenTrack).then(res => {
+           console.log(res)
+          }).catch(err => {
+            console.log(err)
+          })
+          localScreenTrack.on('track-ended', () => {
+            localScreenTrack.close();
+            this.shareClient.leave()
+          })
+        })
+         
+      }).catch(err => {
+        console.log(err);
+      })
+    }
+    }
+
+  sharingScreen = (e) => {
+   this.initLocalScreenStream()
+  };
+
   
   render() {
     const { remoteStreams, rtmLoggedIn, rtmChannelJoined, tuteControls, speakers } = this.state;
-    console.log("streams =>>", remoteStreams);
-    console.log("Speaker =>>", speakers);
+    // console.log("streams =>>", remoteStreams);
+    // console.log("Speaker =>>", speakers);
     let slides = [{
       id: 1, image: 'http://passyworldofmathematics.com/Images/pwmImagesFour/PythagGuitarDiag1250wideJPG.jpg'},
       {id: 2, image: 'https://i.pinimg.com/564x/0e/99/e3/0e99e301ab31095fbed0f737f40870df.jpg'},
@@ -565,6 +605,9 @@ class Teacher extends React.Component {
     return (
       <div className="teacher-container">
         {rtmChannelJoined && <div className='header'>
+          <button className="btn-card" onClick={this.sharingScreen}>
+              Share Screen
+            </button>
            <button className='btn-card' onClick={() => this.handleShow(1)}>
             {this.state.activeSlideId ? 'End Slides': 'Slides Show' }
           </button>
@@ -586,6 +629,7 @@ class Teacher extends React.Component {
             {Object.keys(remoteStreams).map((item, index) => <RemoteStream speaking={speakers.indexOf(item) > -1} key={item} isTute={this.state.isTute} onAVChange={this.onAVChange} tuteControls={tuteControls[item]} stream={remoteStreams[item]} id={item} />)}
           </div>
         </div>
+        <div id='local_stream' style={{width: '100px', height: '200px'}}/>
         
         {rtmLoggedIn && this.state.activeSlideId && <div className ='slides-container'>
           <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />

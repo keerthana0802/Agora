@@ -56,9 +56,9 @@ class Student extends React.Component {
     this.RTCClient = null;
     this.RTMClient = null;
 
-    this.channel = "demo_web";
+    this.channel = "web_share";
     this.localVideoView = React.createRef();
-    this.appId = "9a9c916dff6447c8922914cd2e2eab80";
+    this.appId = "a5431333004841fea39dc13668e92113";
 
 
     this.rtm = {
@@ -180,7 +180,7 @@ class Student extends React.Component {
       let json = JSON.parse(text);
       if(json.type === 'slide') {
         this.setState({activeSlideId:json.slideid})
-      }
+      } 
     })
     this.RTMChannel.on('MemberJoined', (memberId) => {
       console.log("MemberJoined =>>", memberId)
@@ -188,6 +188,7 @@ class Student extends React.Component {
     this.RTMChannel.on('MemberLeft', memberId => {
       console.log("MemberLeft =>>", memberId)
     });
+
 
     this.RTMChannel.on('AttributesUpdated', attributes => {
       console.log("AttributesUpdated =>>", attributes);
@@ -334,6 +335,13 @@ class Student extends React.Component {
   subscribeEvents = () => {
     this.RTCClient.on('user-published', this.userPublished);
     this.RTCClient.on('user-unpublished', this.userUnPublished);
+    this.RTCClient.on('stream-subscribed', (evt) => {
+      console.log('stream-subscribed', evt)
+    })
+    this.RTCClient.on('stopScreenSharing', ()=> {
+      this.localStream.stop();
+      this.localStream.close();
+    })
     this.RTCClient.on('user-left', this.userLeft);
     this.RTCClient.on('user-joined', this.userJoined);
     this.RTCClient.enableAudioVolumeIndicator();
@@ -431,6 +439,7 @@ class Student extends React.Component {
     await this.RTCClient.setStreamFallbackOption(user.uid, 2)
     let remoteStreams = { ...this.state.remoteStreams };
     let uid = user.uid;
+    debugger
     if (mediaType === "video") {
       user.videoTrack.play(uid + "");
       remoteStreams[uid].videoState = true;
@@ -438,6 +447,7 @@ class Student extends React.Component {
     else if (mediaType === "audio") {
       user.audioTrack.play();
       remoteStreams[uid].audioState = true;
+    } else if (mediaType === "screen") {
     }
     this.setState({ remoteStreams });
 
@@ -571,8 +581,8 @@ class Student extends React.Component {
       {id: 3, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Yousician-Guitar-learning-app-Android.jpg'},
       {id:  4, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Guitar-Plus.png'}]
     return (
-      <div class="box">
-        <div class="right">
+      <div className="box">
+        <div className="right">
           <div className="App">
             <div className="localStreamContainer">
               <input
