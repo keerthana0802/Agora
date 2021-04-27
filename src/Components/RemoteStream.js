@@ -15,16 +15,16 @@ const RemoteStream = (props) => {
     <div className="remoteStreamItem">
       <div className={speaking ? "remoteStream speaking" : "remoteStream"} id={id}>
         {speaking && <div className="speakerIcon"><img className="sicon" src={speakingIcon} alt="" /></div>}
-         {isTute ? <div className="rmtControls">
-            <div className={ClassNames("controlIcon", 'cursor')} onClick={() => onAVChange(id, 'video', tuteControls.video)}>{videoState ? <VideocamIcon fontSize="small" /> : <VideocamOffIcon fontSize="small" />}</div>
-            <div className="controlIcon">{id}</div>
-            <div className={ClassNames("controlIcon", 'cursor')} onClick={() => onAVChange(id, 'audio', tuteControls.audio)}>{audioState ? <MicIcon fontSize="small" /> : <MicOffIcon fontSize="small" />}</div>
-          </div>  : <div className="rmtControls">
-          <div className="controlIcon" >{videoState ? <VideocamIcon fontSize="small" /> : <VideocamOffIcon fontSize="small" />}</div>
-          <div className="controlIcon">{id}</div>
-          <div className="controlIcon" >{audioState ? <MicIcon fontSize="small" /> : <MicOffIcon fontSize="small" />}</div>
-        </div>}
       </div>
+      {isTute ? <div className="rmtControls">
+          <div className={ClassNames("controlIcon", 'cursor')} onClick={() => onAVChange(id, 'video', tuteControls.video)}>{videoState ? <VideocamIcon fontSize="small" /> : <VideocamOffIcon fontSize="small" />}</div>
+          <div className="controlIcon">{id}</div>
+          <div className={ClassNames("controlIcon", 'cursor')} onClick={() => onAVChange(id, 'audio', tuteControls.audio)}>{audioState ? <MicIcon fontSize="small" /> : <MicOffIcon fontSize="small" />}</div>
+        </div>  : <div className="rmtControls">
+        <div className="controlIcon" >{videoState ? <VideocamIcon fontSize="small" /> : <VideocamOffIcon fontSize="small" />}</div>
+        <div className="controlIcon">{id}</div>
+        <div className="controlIcon" >{audioState ? <MicIcon fontSize="small" /> : <MicOffIcon fontSize="small" />}</div>
+      </div>}
 
       {/*isTute && <div className="tuteControls">
         <button className="controlIcon" onClick={() => onAVChange(id, 'video', tuteControls.video)} >{tuteControls.video ? "Mute Video" : "Unmute Video"}</button>

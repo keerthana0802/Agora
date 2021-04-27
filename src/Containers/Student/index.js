@@ -2,7 +2,7 @@ import React from 'react';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import '../../App.css';
 import RemoteStream from '../../Components/RemoteStream';
-
+import ChatCard from '../../Components/Chat'
 import VideocamIcon from '@material-ui/icons/Videocam';
 import VideocamOffIcon from '@material-ui/icons/VideocamOff';
 import MicIcon from '@material-ui/icons/Mic';
@@ -55,7 +55,7 @@ class Student extends React.Component {
     this.RTMChannel = null;
     this.RTCClient = null;
     this.RTMClient = null;
-
+    this.chatRef  = null;
     this.channel = "web_share";
     this.localVideoView = React.createRef();
     this.appId = "a5431333004841fea39dc13668e92113";
@@ -180,7 +180,9 @@ class Student extends React.Component {
       let json = JSON.parse(text);
       if(json.type === 'slide') {
         this.setState({activeSlideId:json.slideid})
-      } 
+      } else if(json.type === 'chat') {
+        this.chatRef.onEvents(json)
+      }
     })
     this.RTMChannel.on('MemberJoined', (memberId) => {
       console.log("MemberJoined =>>", memberId)
@@ -521,6 +523,28 @@ class Student extends React.Component {
     }
 
   }
+  setUuid = () => {
+    return Math.random().toString(16).slice(2)
+  }
+
+  sendMessage = (msg, streamId ) => {
+    if(!msg) return 
+    let userId = this.state.uid
+    let lastMessageId = this.setUuid()
+    let todayDate = new Date()
+    todayDate = todayDate.getTime()
+    let data = JSON.stringify({received_at: todayDate, ...msg, user_id:userId , user_type: 'student', id : lastMessageId, class_room_id:this.channel})
+    this.sendChannelMessage(data)
+  }
+
+  sendChannelMessage = (data) => {
+    this.RTMChannel && this.RTMChannel.sendMessage({text: data}).then(() => {
+      console.log('Success sending message', data)
+    }).catch(error => {
+      console.log('Failed sending message:', error)
+    });
+  }
+
   onAVChange = (id, type, value) => {
     let tuteControls = { ...this.state.tuteControls }
     let ctrl = tuteControls[id] ? { ...tuteControls[id] } : {};
@@ -652,6 +676,12 @@ class Student extends React.Component {
         {this.state.activeSlideId && <div className ='slides-container'>
           <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
         </div>}
+        {rtmLoggedIn && <ChatCard 
+          onRef={ref => (this.chatRef = ref)}
+          sendMessage = {this.sendMessage}
+          name={this.state.uid}
+          userId={this.state.uid}
+        />}
       </div>
     );
   }

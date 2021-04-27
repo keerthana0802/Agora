@@ -9,6 +9,7 @@ import VideocamOffIcon from '@material-ui/icons/VideocamOff';
 import MicIcon from '@material-ui/icons/Mic';
 import MicOffIcon from '@material-ui/icons/MicOff';
 import AgoraRTM from 'agora-rtm-sdk';
+import ChatCard from '../../Components/Chat'
 
 
 class Teacher extends React.Component {
@@ -169,8 +170,12 @@ class Teacher extends React.Component {
   }
 
   subscribeChannelEvents = () => {
-    this.RTMChannel.on('ChannelMessage', (message, memberId) => {
-      console.log("ChannelMessage =>>", message, memberId)
+    this.RTMChannel.on('ChannelMessage', ({text}, memberId) => {
+      console.log("ChannelMessage =>>", text, memberId)
+      let json = JSON.parse(text);
+      if (json.type === 'chat') {
+        this.chatRef.onEvents(json)
+      }
     })
     this.RTMChannel.on('MemberJoined', (memberId) => {
       console.log("MemberJoined =>>", memberId)
@@ -444,6 +449,7 @@ class Teacher extends React.Component {
     if (this.RTCClient !== null) {
       this.RTCClient.join(this.appId, this.channel, null, this.state.uid).then(uid => {
         this.rtm.params.uid = uid;
+        this.subscribeChannelEvents()
         this.RTCClient.enableDualStream().then(() => {
           console.log("Enable Dual stream success!");
         }).catch(err => {
@@ -546,6 +552,28 @@ class Teacher extends React.Component {
     this.setVideoProfile(value);
   }
 
+  setUuid = () => {
+    return Math.random().toString(16).slice(2)
+  }
+
+  sendMessage = (msg, streamId ) => {
+    if(!msg) return 
+    let userId = this.state.uid
+    let lastMessageId = this.setUuid()
+    let todayDate = new Date()
+    todayDate = todayDate.getTime()
+    let data = JSON.stringify({received_at: todayDate, ...msg, user_id:userId , user_type: 'teacher', id : lastMessageId, class_room_id:this.channel})
+    this.sendChannelMessage(data)
+  }
+
+  sendChannelMessage = (data) => {
+    this.RTMChannel && this.RTMChannel.sendMessage({text: data}).then(() => {
+      console.log('Success sending message', data)
+    }).catch(error => {
+      console.log('Failed sending message:', error)
+    });
+  }
+
   onSlideChange = (slideid=1) => {
     let that = this
     this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'activeSlideId': `${slideid}` }).then(res => {
@@ -638,6 +666,12 @@ class Teacher extends React.Component {
             <button disabled={slides.length === this.state.activeSlideId} onClick={() => this.onSlideChange(this.state.activeSlideId+1)}> {'>'}</button>
             </div>
         </div>}
+        {rtmLoggedIn && <div className='chatBox'><ChatCard 
+          onRef={ref => (this.chatRef = ref)}
+          sendMessage = {this.sendMessage}
+          name={this.state.uid}
+          userId={this.state.uid}
+        /></div>}
         </div>
       </div>
     );

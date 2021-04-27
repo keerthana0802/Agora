@@ -21,3 +21,6 @@
   min-height: calc(100vh - 40px);
   padding: 16px;
 }
+.chatBox {
+  height: 70vh;
+}

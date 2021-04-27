@@ -96,8 +96,13 @@ display: flex;
   width: 100%;
   box-sizing: border-box;
   z-index: 5;
-  padding: 2px 10px;
+  /* padding: 2px 10px; */
+  color: #666666;
+  font-size: 14px;
   background-color: #fff;
+  background: #DFE6EC;
+  border-radius: 8px;
+  padding: 8px;
 }
 .speakerIcon {
   z-index: 5;
