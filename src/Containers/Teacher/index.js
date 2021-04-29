@@ -518,6 +518,11 @@ class Teacher extends React.Component {
         student_user_id: id
       })
       tuteControls[id][type] = false
+      let remoteStreams = this.state.remoteStreams
+      if(remoteStreams[id]) {
+        remoteStreams[id].pin = false
+        this.setState({remoteStreams})
+      }
       this.setState({ tuteControls });
       return
     }
