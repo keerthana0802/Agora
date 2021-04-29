@@ -1,0 +1,33 @@
+.controlsGroup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 42px;
+  flex-direction: row;
+  padding: 6px;
+  box-sizing: border-box;
+   opacity: 0.8; 
+  width: 100%;
+  
+  border-radius: 27.4286px;
+}
+.controlsGroup:hover {
+  background: rgba(199, 211, 220, 0.9);
+}
+.controlIcon {
+  display: flex;
+  padding-left: 5px;
+  padding-right: 5px;
+
+}
+.controlIcon svg , img {
+  height: 27px;
+  width: 27px;
+}
+.pin-icon {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  color: #FFA724;
+}

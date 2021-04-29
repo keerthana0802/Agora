@@ -25,6 +25,9 @@ class ChatMesageViewCard extends React.Component {
             if(!isSameUser) {
               lastMsgUserId = chat.userId
             }
+            if(index === 0) {
+              isSameUser = false
+            }
             return (
               <div key={`chat-${index}`} className={ClassNames('chatCard', {isMe:userId === chat.userId, isSameUser})}>
                 <div className={ClassNames('icon')}> 
