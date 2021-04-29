@@ -14,6 +14,9 @@
   width: 36px;
   height: 36px;
   margin-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center
 }
 .chatCard {
   display: flex;

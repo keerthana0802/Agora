@@ -7,7 +7,10 @@ import VideocamIcon from '@material-ui/icons/Videocam';
 import VideocamOffIcon from '@material-ui/icons/VideocamOff';
 import MicIcon from '@material-ui/icons/Mic';
 import MicOffIcon from '@material-ui/icons/MicOff';
+
 import AgoraRTM from 'agora-rtm-sdk';
+import {Images} from '../../Themes'
+import ClassNames from 'classnames'
 import _get from 'lodash/get'
 
 
@@ -29,6 +32,7 @@ class Student extends React.Component {
       connectionState: 'LOADING',
       localVideo: true,
       localAudio: true,
+      pin: false,
       videoPublished: false,
       audioPublished: false,
       rtmLoggedIn: false,
@@ -182,6 +186,17 @@ class Student extends React.Component {
         this.setState({activeSlideId:json.slideid})
       } else if(json.type === 'chat') {
         this.chatRef.onEvents(json)
+      } else if(json.type === 'pin') {
+        let userId = json.student_user_id
+        if(userId  === this.state.uid) {
+          this.setState({pin: json.value})
+        } else {
+          let remoteStreams = this.state.remoteStreams
+          if(remoteStreams[userId]) {
+            remoteStreams[userId].pin = json.value
+            this.setState({remoteStreams})
+          }
+        }
       }
     })
     this.RTMChannel.on('MemberJoined', (memberId) => {
@@ -419,7 +434,8 @@ class Student extends React.Component {
     remoteStreams[user.uid] = {
       uid: user.uid,
       videoState: false,
-      audioState: false
+      audioState: false,
+      pin: false
     };
 
     if (!tuteControls[user.uid]) {
@@ -441,12 +457,11 @@ class Student extends React.Component {
     await this.RTCClient.setStreamFallbackOption(user.uid, 2)
     let remoteStreams = { ...this.state.remoteStreams };
     let uid = user.uid;
-    debugger
-    if (mediaType === "video") {
+    if (mediaType === "video" && remoteStreams[uid]) {
       user.videoTrack.play(uid + "");
       remoteStreams[uid].videoState = true;
     }
-    else if (mediaType === "audio") {
+    else if (mediaType === "audio" && remoteStreams[uid]) {
       user.audioTrack.play();
       remoteStreams[uid].audioState = true;
     } else if (mediaType === "screen") {
@@ -520,6 +535,15 @@ class Student extends React.Component {
 
       }
       this.setState({ localAudio: !this.state.localAudio });
+    } else if(track === 'pin') {
+      this.setState({pin: !this.state.pin})
+      this.sendMessage({
+        type: 'pin',
+        value: !this.state.pin,
+        student_user_id: this.state.uid
+      })
+      
+      
     }
 
   }
@@ -615,28 +639,14 @@ class Student extends React.Component {
                 onChange={(e) => this.setState({ uid: e.target.value })}
                 placeholder="enter user name"
               />
-              <div id="localView" ref={this.localVideoView}></div>
-
-              <div className="controls">
-                <div
-                  className="controlIcon"
-                  onClick={() => this.toggleTrack("video")}
-                >
-                  {this.state.localVideo ? (
-                    <VideocamIcon fontSize="large" />
-                  ) : (
-                    <VideocamOffIcon fontSize="large" />
-                  )}
-                </div>
-                <div
-                  className="controlIcon"
-                  onClick={() => this.toggleTrack("audio")}
-                >
-                  {this.state.localAudio ? (
-                    <MicIcon fontSize="large" />
-                  ) : (
-                    <MicOffIcon fontSize="large" />
-                  )}
+              <div className="remoteStreamItem">
+                <div className={"remoteStream"} id="localView" ref={this.localVideoView} />
+                <div className="controlsGroup">
+                  <div className={ClassNames("controlIcon", 'cursor')} onClick={() => this.toggleTrack("video")}>{this.state.localVideo ? <VideocamIcon fontSize="large" /> : <VideocamOffIcon fontSize="large" />}</div>
+                  <div className={ClassNames("controlIcon", 'cursor')} onClick={() => this.toggleTrack("audio")}>{this.state.localAudio ? <MicIcon fontSize="large" /> : <MicOffIcon fontSize="large" />}</div>
+                  {rtmLoggedIn &&
+                    <div className={ClassNames("controlIcon", 'cursor')} onClick={() => this.toggleTrack("pin")}>{!this.state.pin ? <img src={Images.pin.default} /> : <img src={Images.unpin.default} />}</div>
+                  }
                 </div>
               </div>
               {!rtmLoggedIn && (
@@ -657,19 +667,17 @@ class Student extends React.Component {
             </div>
 
             <div className="rightContainer">
-              <div className="remoteStreamContainer">
-                {Object.keys(remoteStreams).map((item, index) => (
-                  <RemoteStream
-                    speaking={speakers.indexOf(item) > -1}
-                    key={item}
-                    isTute={this.state.isTute}
-                    onAVChange={this.onAVChange}
-                    tuteControls={tuteControls[item]}
-                    stream={remoteStreams[item]}
-                    id={item}
-                  />
-                ))}
-              </div>
+              {Object.keys(remoteStreams).map((item, index) => (
+                <RemoteStream
+                  speaking={speakers.indexOf(item) > -1}
+                  key={item}
+                  isTute={this.state.isTute}
+                  onAVChange={this.onAVChange}
+                  tuteControls={tuteControls[item]}
+                  stream={remoteStreams[item]}
+                  id={item}
+                />
+              ))}
             </div>
           </div>
         </div>

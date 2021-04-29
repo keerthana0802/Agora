@@ -25,6 +25,7 @@
     "react-router-dom": "^5.2.0",
     "react-router-redux": "^4.0.8",
     "react-scripts": "4.0.3",
+    "react-virtuoso": "^1.8.6",
     "web-vitals": "^1.1.1"
   },
   "scripts": {

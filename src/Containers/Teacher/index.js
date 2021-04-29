@@ -10,7 +10,7 @@ import MicIcon from '@material-ui/icons/Mic';
 import MicOffIcon from '@material-ui/icons/MicOff';
 import AgoraRTM from 'agora-rtm-sdk';
 import ChatCard from '../../Components/Chat'
-
+import ClassNames from 'classnames'
 
 class Teacher extends React.Component {
   constructor(props) {
@@ -175,6 +175,13 @@ class Teacher extends React.Component {
       let json = JSON.parse(text);
       if (json.type === 'chat') {
         this.chatRef.onEvents(json)
+      } else if(json.type === 'pin') {
+        let userId = json.user_id
+        let remoteStreams = this.state.remoteStreams
+        if(remoteStreams[userId]) {
+          remoteStreams[userId].pin = json.value
+          this.setState({remoteStreams})
+        }
       }
     })
     this.RTMChannel.on('MemberJoined', (memberId) => {
@@ -395,7 +402,8 @@ class Teacher extends React.Component {
     remoteStreams[user.uid] = {
       uid: user.uid,
       videoState: false,
-      audioState: false
+      audioState: false,
+      pin: false
     };
 
     if (!tuteControls[user.uid]) {
@@ -417,11 +425,11 @@ class Teacher extends React.Component {
     await this.RTCClient.setStreamFallbackOption(user.uid, 2)
     let remoteStreams = { ...this.state.remoteStreams };
     let uid = user.uid;
-    if (mediaType === "video") {
+    if (mediaType === "video" && user.videoTrack) {
       user.videoTrack.play(uid + "");
       remoteStreams[uid].videoState = true;
     }
-    else if (mediaType === "audio") {
+    else if (mediaType === "audio" && user.audioTrack ) {
       user.audioTrack.play();
       remoteStreams[uid].audioState = true;
     }
@@ -502,10 +510,20 @@ class Teacher extends React.Component {
     let ctrl = tuteControls[id] ? { ...tuteControls[id] } : {};
     ctrl[type] = !value;
     tuteControls[id] = ctrl;
-
+    let text = JSON.stringify({ type, value: !value });
+    if(type === 'pin') {
+      this.sendMessage({
+        type: 'pin',
+        value: false,
+        student_user_id: id
+      })
+      tuteControls[id][type] = false
+      this.setState({ tuteControls });
+      return
+    }
     //this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'av': JSON.stringify(tuteControls) }).then(res => {
     //  console.log(" =>> AV updated successfully!");
-    let text = JSON.stringify({ type, value: !value });
+    
     this.RTMClient.sendMessageToPeer(
       { text }, id.toString())
     .then(result => {
@@ -644,11 +662,13 @@ class Teacher extends React.Component {
         <div className='main-container'>
         <div className="localStreamContainer">
           <input className="input" value={this.state.uid} onChange={(e) => this.setState({ uid: e.target.value })} placeholder="enter user name" />
-          <div id="localView" ref={this.localVideoView}></div>
-          <div className="controls">
-            <div className="controlIcon" onClick={() => this.toggleTrack("video")}>{this.state.localVideo ? <VideocamIcon fontSize="large" /> : <VideocamOffIcon fontSize="large" />}</div>
-            <div className="controlIcon" onClick={() => this.toggleTrack("audio")}>{this.state.localAudio ? <MicIcon fontSize="large" /> : <MicOffIcon fontSize="large" />}</div>
-          </div>
+          <div className="remoteStreamItem">
+                <div className={"remoteStream"} id="localView" ref={this.localVideoView} />
+                <div className="controlsGroup">
+                  <div className={ClassNames("controlIcon", 'cursor')} onClick={() => this.toggleTrack("video")}>{this.state.localVideo ? <VideocamIcon fontSize="large" /> : <VideocamOffIcon fontSize="large" />}</div>
+                  <div className={ClassNames("controlIcon", 'cursor')} onClick={() => this.toggleTrack("audio")}>{this.state.localAudio ? <MicIcon fontSize="large" /> : <MicOffIcon fontSize="large" />}</div>
+               </div>
+              </div>
           {!rtmLoggedIn && <button className="join" onClick={this.loginToRTM}>Join</button>}
           
        </div>
