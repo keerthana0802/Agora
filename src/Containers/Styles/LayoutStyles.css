@@ -1,0 +1,24 @@
+body {
+  margin: 0;
+  box-sizing: border-box; }
+
+.app-main-container {
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - 64px);
+  padding-top: 24px;
+  padding-bottom: 8px;
+  box-sizing: border-box; }
+  .app-main-container .chatContainer {
+    margin-left: 12px;
+    margin-right: 12px; }
+  .app-main-container .right-container {
+    display: flex;
+    height: 100%;
+    flex: 1;
+    flex-direction: column; }
+    .app-main-container .right-container .class-container {
+      display: flex;
+      height: calc(100% - 64px); }
+    .app-main-container .right-container .footer-card {
+      display: flex; }

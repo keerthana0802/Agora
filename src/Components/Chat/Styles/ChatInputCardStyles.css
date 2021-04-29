@@ -6,8 +6,8 @@
   min-height: 40px;
   height: 40px;
   max-height: 80px;
-  overflow: auto;
-}
+  overflow: auto; }
+
 .chatInputCard input {
   /*font-size: 16px;*/
   /*line-height: 4px;*/
@@ -17,14 +17,11 @@
   box-shadow: none;
   padding-left: 24px;
   outline: none;
-  width: 100%;
-  &:focus {
+  width: 100%; }
+  .chatInputCard input:focus {
     box-shadow: none;
-    outline: none;
-  }
-}
+    outline: none; }
 
 .chatInputCard input:focus {
   box-shadow: none;
-  outline: none;
-}
+  outline: none; }

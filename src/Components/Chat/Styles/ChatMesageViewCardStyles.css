@@ -6,8 +6,8 @@
   justify-content: flex-end;
   overflow-y: auto;
   flex: 9;
-  padding: 0 16px 16px 16px;
-}
+  padding: 0 16px 16px 16px; }
+
 .icon {
   border-radius: 100%;
   box-shadow: 0px 2px 6px rgba(91, 22, 170, 0.12), inset 1px 0px 3px rgba(255, 255, 255, 0.5);
@@ -16,48 +16,44 @@
   margin-right: 16px;
   display: flex;
   align-items: center;
-  justify-content: center
-}
+  justify-content: center; }
+
 .chatCard {
   display: flex;
   align-items: flex-start;
-  margin-top: 8px;
-}
+  margin-top: 8px; }
+
 .chatCard.isMe {
-  flex-direction: row-reverse;
-}
+  flex-direction: row-reverse; }
+
 .message {
   /*opacity: 0.7;*/
   background: #F6F6F8;
-  padding: 12px; 
+  padding: 12px;
   min-height: 24px;
-  border-radius: 24px;
-}
+  border-radius: 24px; }
+
 .name {
   color: #333333;
   margin-bottom: 3px;
-  font-weight: 600;
-}
+  font-weight: 600; }
 
 .message .text {
-  color: #666666;
-}
+  color: #666666; }
+
 .chatTextTimeBox {
-  display: flex;
-}
-.chatTextTimeBox .time{
+  display: flex; }
+
+.chatTextTimeBox .time {
   padding-left: 14px;
-  color: #999999;
-}
+  color: #999999; }
 
 .chatCard.isMe .icon {
   margin-right: 0;
-  margin-left: 16px;
-}
+  margin-left: 16px; }
 
 .chatCard.isSameUser .icon {
-  opacity: 0;
-}
+  opacity: 0; }
+
 .chatCard.isSameUser .name {
-  display: none;
-}
+  display: none; }

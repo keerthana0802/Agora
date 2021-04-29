@@ -1,0 +1,17 @@
+.btn-circle {
+  border-radius: 24px;
+  box-shadow: 0 2px 6px 0 rgba(91, 22, 170, 0.12), inset 1px 0 3px 0 rgba(255, 255, 255, 0.5);
+  background-color: #ffffff;
+  padding: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 12px;
+  img {
+    display: flex;
+    width: 26px;
+    height: 26px;
+    align-items: center;
+    justify-content: center;
+  }
+}

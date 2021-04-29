@@ -7,12 +7,13 @@ import VideocamIcon from '@material-ui/icons/Videocam';
 import VideocamOffIcon from '@material-ui/icons/VideocamOff';
 import MicIcon from '@material-ui/icons/Mic';
 import MicOffIcon from '@material-ui/icons/MicOff';
-
+import AppDashboard from '../../Components/AppDashboard'
+import Footer from '../../Components/Common/Footer'
 import AgoraRTM from 'agora-rtm-sdk';
 import {Images} from '../../Themes'
 import ClassNames from 'classnames'
 import _get from 'lodash/get'
-
+import '../Styles/LayoutStyles.css'
 
 // var videoProfiles = [
 //   { label: "120p_1", detail: "120p_1, 160×120, 15fps, 65Kbps", value: "120p_1" },
@@ -25,6 +26,7 @@ class Student extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      openChat: false,
       localStreamInitiated: false,
       remoteStreams: {
 
@@ -619,6 +621,10 @@ class Student extends React.Component {
     this.setVideoProfile(value);
   }
 
+  handleFooterClick = (key) => {
+    this.setState({[key]: !this.state[key]})
+  }
+
   render() {
     const { remoteStreams, rtmLoggedIn, rtmChannelJoined, tuteControls, speakers } = this.state;
     console.log("streams =>>", remoteStreams);
@@ -629,68 +635,89 @@ class Student extends React.Component {
       {id: 3, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Yousician-Guitar-learning-app-Android.jpg'},
       {id:  4, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Guitar-Plus.png'}]
     return (
-      <div className="box">
-        <div className="right">
-          <div className="App">
-            <div className="localStreamContainer">
-              <input
-                className="input"
-                value={this.state.uid}
-                onChange={(e) => this.setState({ uid: e.target.value })}
-                placeholder="enter user name"
-              />
-              <div className="remoteStreamItem">
-                <div className={"remoteStream"} id="localView" ref={this.localVideoView} />
-                <div className="controlsGroup">
-                  <div className={ClassNames("controlIcon", 'cursor')} onClick={() => this.toggleTrack("video")}>{this.state.localVideo ? <VideocamIcon fontSize="large" /> : <VideocamOffIcon fontSize="large" />}</div>
-                  <div className={ClassNames("controlIcon", 'cursor')} onClick={() => this.toggleTrack("audio")}>{this.state.localAudio ? <MicIcon fontSize="large" /> : <MicOffIcon fontSize="large" />}</div>
-                  {rtmLoggedIn &&
-                    <div className={ClassNames("controlIcon", 'cursor')} onClick={() => this.toggleTrack("pin")}>{!this.state.pin ? <img src={Images.pin.default} /> : <img src={Images.unpin.default} />}</div>
-                  }
+      <AppDashboard >
+      <div className='app-main-container'>
+        <div className='right-container'>
+          <div className="class-container">
+            <div className="App">
+              <div className="localStreamContainer">
+                <input
+                  className="input"
+                  value={this.state.uid}
+                  onChange={(e) => this.setState({ uid: e.target.value })}
+                  placeholder="enter user name"
+                />
+                <div className="remoteStreamItem">
+                  <div className={"remoteStream"} id="localView" ref={this.localVideoView} />
+                </div>
+                {!rtmLoggedIn && (
+                  <button className="join" onClick={this.loginToRTM}>
+                    Login RTM
+                  </button>
+                )}
+                {rtmChannelJoined && (
+                  <button className="join" onClick={this.leaveChannel}>
+                    Leave Channel
+                  </button>
+                )}
+                <div className="rightContainer">
+                  {Object.keys(remoteStreams).map((item, index) => (
+                    <RemoteStream
+                      speaking={speakers.indexOf(item) > -1}
+                      key={item}
+                      isTute={this.state.isTute}
+                      onAVChange={this.onAVChange}
+                      tuteControls={tuteControls[item]}
+                      stream={remoteStreams[item]}
+                      id={item}
+                    />
+                  ))}
                 </div>
               </div>
-              {!rtmLoggedIn && (
-                <button className="join" onClick={this.loginToRTM}>
-                  Login RTM
-                </button>
-              )}
-              {/* {rtmLoggedIn && !rtmChannelJoined && <button className="join" onClick={this.joinSessionChannel}>Join Channel</button>} */}
-              {rtmChannelJoined && (
-                <button className="join" onClick={this.leaveChannel}>
-                  Leave Channel
-                </button>
-              )}
-              {/* <button className="join" onClick={this.getChannelCount}>Member count</button> */}
-              {/* <button className="join" onClick={this.getUserAttr}>Get user Attr</button> */}
-              {/* <button className="join" onClick={this.disableMe}>mark me as disabled</button> */}
-              {/* <button className="join" onClick={this.getChannelAttr}>Get channel attr</button> */}
-            </div>
-
-            <div className="rightContainer">
-              {Object.keys(remoteStreams).map((item, index) => (
-                <RemoteStream
-                  speaking={speakers.indexOf(item) > -1}
-                  key={item}
-                  isTute={this.state.isTute}
-                  onAVChange={this.onAVChange}
-                  tuteControls={tuteControls[item]}
-                  stream={remoteStreams[item]}
-                  id={item}
-                />
-              ))}
             </div>
           </div>
+          {this.state.activeSlideId && <div className ='slides-container'>
+            <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
+          </div>}
+          <Footer btnList={[
+              {
+                key: 'chat-icon',
+                isActive: this.state.openChat,
+                icon: 'chat',
+                inActiveIcon: 'inactiveChat',
+                onClick: this.handleFooterClick.bind(this,'openChat')
+              },
+              { key: 'mute-icon',
+                isActive: this.state.localAudio,
+                icon: 'mute',
+                inActiveIcon: 'unmute',
+                onClick: this.toggleTrack.bind(this,"audio")
+              },
+              { 
+                key: 'video-icon',
+                isActive: this.state.localVideo,
+                icon: 'video',
+                inActiveIcon: 'videoOfff',
+                onClick: this.toggleTrack.bind(this,"video")
+              },
+              {
+                key: 'unpin-icon',
+                isActive: this.state.pin,
+                icon: 'unpin',
+                inActiveIcon: 'pin',
+                onClick: this.toggleTrack.bind(this,"pin")
+              }
+            ]}/>
         </div>
-        {this.state.activeSlideId && <div className ='slides-container'>
-          <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
-        </div>}
-        {rtmLoggedIn && <ChatCard 
-          onRef={ref => (this.chatRef = ref)}
-          sendMessage = {this.sendMessage}
-          name={this.state.uid}
-          userId={this.state.uid}
+        
+        {(rtmLoggedIn && this.state.openChat) && <ChatCard 
+        onRef={ref => (this.chatRef = ref)}
+        sendMessage = {this.sendMessage}
+        name={this.state.uid}
+        userId={this.state.uid}
         />}
       </div>
+      </AppDashboard>
     );
   }
 }

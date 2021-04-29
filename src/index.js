@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
+import './Assets/Fonts/index.css';
 import Routes from './Routes'
 //const history = createHistory();
 
