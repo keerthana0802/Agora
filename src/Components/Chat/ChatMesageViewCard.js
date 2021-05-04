@@ -31,7 +31,7 @@ class ChatMesageViewCard extends React.Component {
             return (
               <div key={`chat-${index}`} className={ClassNames('chatCard', {isMe:userId === chat.userId, isSameUser})}>
                 <div className={ClassNames('icon')}> 
-                  <img src={_get(Images,'vector.default')} alt=''/>
+                  <img src={_get(Images,'vector')} alt=''/>
                 </div>
                 <div className={ClassNames('message')} >
                   <div className='name'> {window.decodeURI(chat.name)} </div>

@@ -12,5 +12,6 @@ const images = {
   sharescreen: require('../Images/sharescreen.svg').default,
   videoOff: require('../Images/video-off.svg').default,
   video: require('../Images/video.svg').default,
+  raisedActive: require('../Images/raised-active.svg').default
 }
 export default images

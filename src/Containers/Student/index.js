@@ -9,11 +9,13 @@ import MicIcon from '@material-ui/icons/Mic';
 import MicOffIcon from '@material-ui/icons/MicOff';
 import AppDashboard from '../../Components/AppDashboard'
 import Footer from '../../Components/Common/Footer'
+import VideoCard from '../../Components/Common/VideoCard'
 import AgoraRTM from 'agora-rtm-sdk';
 import {Images} from '../../Themes'
 import ClassNames from 'classnames'
 import _get from 'lodash/get'
 import '../Styles/LayoutStyles.css'
+import {parseUrl} from '../../Lib/Utilities'
 
 // var videoProfiles = [
 //   { label: "120p_1", detail: "120p_1, 160×120, 15fps, 65Kbps", value: "120p_1" },
@@ -26,6 +28,7 @@ class Student extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      chatBox: [],
       openChat: false,
       localStreamInitiated: false,
       remoteStreams: {
@@ -74,9 +77,14 @@ class Student extends React.Component {
   }
 
 
-
+  onUpdateChat = (chatBox) => {
+    this.setState({chatBox})
+  }
 
   componentDidMount() {
+    //let params = parseUrl()
+    let userId = this.setUuid()
+    this.setState({uid: userId})
     this.initRTM();
     this.initLocalStream();
     this.onDeviceChange();
@@ -187,7 +195,7 @@ class Student extends React.Component {
       if(json.type === 'slide') {
         this.setState({activeSlideId:json.slideid})
       } else if(json.type === 'chat') {
-        this.chatRef.onEvents(json)
+        this.onEvents(json)
       } else if(json.type === 'pin') {
         let userId = json.student_user_id
         if(userId  === this.state.uid) {
@@ -276,7 +284,7 @@ class Student extends React.Component {
       this.videoTrack = await AgoraRTC.createCameraVideoTrack({ encoderConfig: this.state.selectedProfile });
       this.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
       // this.videoTrack.setOptimizationMode("motion");
-      this.videoTrack.play(this.localVideoView.current);
+      this.videoTrack.play(this.state.uid);
     } catch (error) {
       alert("please check the permission for audio/camera")
       console.log("Weeoe", error)
@@ -624,6 +632,17 @@ class Student extends React.Component {
   handleFooterClick = (key) => {
     this.setState({[key]: !this.state[key]})
   }
+  onEvents = (json) => {
+    // let json = JSON.parse(msg)
+    let data = JSON.parse(json.data)
+    let chatBox = this.state.chatBox
+    if(json.received_at) {
+      data = {...data, dateAt: json.received_at }
+
+    }
+    chatBox.push(data)
+    this.setState({chatBox})
+  }
 
   render() {
     const { remoteStreams, rtmLoggedIn, rtmChannelJoined, tuteControls, speakers } = this.state;
@@ -634,60 +653,64 @@ class Student extends React.Component {
       {id: 2, image: 'https://i.pinimg.com/564x/0e/99/e3/0e99e301ab31095fbed0f737f40870df.jpg'},
       {id: 3, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Yousician-Guitar-learning-app-Android.jpg'},
       {id:  4, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Guitar-Plus.png'}]
+    let params = parseUrl()
     return (
-      <AppDashboard >
+      <AppDashboard 
+        btnList={[
+          {isDisplay: rtmLoggedIn,
+          key: 'remaining-timer-icon',
+          title: '25 minutes'},
+          {isDisplay: rtmLoggedIn,
+          key: 'Support-icon',
+          title: 'Support'},
+          { key: 'login-icon',
+          onClick:  rtmLoggedIn ? this.leaveChannel : this.loginToRTM,
+          title: rtmLoggedIn ? 'Leave' : 'Join'}
+        ]}>
       <div className='app-main-container'>
         <div className='right-container'>
           <div className="class-container">
-            <div className="App">
-              <div className="localStreamContainer">
-                <input
-                  className="input"
-                  value={this.state.uid}
-                  onChange={(e) => this.setState({ uid: e.target.value })}
-                  placeholder="enter user name"
-                />
-                <div className="remoteStreamItem">
-                  <div className={"remoteStream"} id="localView" ref={this.localVideoView} />
-                </div>
-                {!rtmLoggedIn && (
-                  <button className="join" onClick={this.loginToRTM}>
-                    Login RTM
-                  </button>
-                )}
-                {rtmChannelJoined && (
-                  <button className="join" onClick={this.leaveChannel}>
-                    Leave Channel
-                  </button>
-                )}
-                <div className="rightContainer">
-                  {Object.keys(remoteStreams).map((item, index) => (
-                    <RemoteStream
-                      speaking={speakers.indexOf(item) > -1}
-                      key={item}
-                      isTute={this.state.isTute}
-                      onAVChange={this.onAVChange}
-                      tuteControls={tuteControls[item]}
-                      stream={remoteStreams[item]}
-                      id={item}
-                    />
-                  ))}
-                </div>
+            <div className="main-card">
+              <div className="rightContainer">
+                <VideoCard id={this.state.uid} ref={this.localVideoView} name={params.name}/>
+                {Object.keys(remoteStreams).map((item, index) => (
+                  <RemoteStream
+                    speaking={speakers.indexOf(item) > -1}
+                    key={item}
+                    isTute={this.state.isTute}
+                    onAVChange={this.onAVChange}
+                    tuteControls={tuteControls[item]}
+                    stream={remoteStreams[item]}
+                    id={item}
+                  />
+                ))}
               </div>
+               {(rtmLoggedIn && this.state.openChat) && <ChatCard 
+                chatBox={this.state.chatBox}
+                onUpdateChat={this.onUpdateChat}
+                onRef={ref => (this.chatRef = ref)}
+                sendMessage = {this.sendMessage}
+                name={params.name || this.state.uid}
+                userId={this.state.uid}
+                />}
             </div>
           </div>
           {this.state.activeSlideId && <div className ='slides-container'>
             <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
           </div>}
-          <Footer btnList={[
+          <Footer 
+            rtmLoggedIn={rtmLoggedIn}
+            btnList={[
               {
+                isDisplay: rtmLoggedIn,
                 key: 'chat-icon',
-                isActive: this.state.openChat,
+                isActive: !this.state.openChat,
                 icon: 'chat',
                 inActiveIcon: 'inactiveChat',
                 onClick: this.handleFooterClick.bind(this,'openChat')
               },
-              { key: 'mute-icon',
+              {  
+                key: 'mute-icon',
                 isActive: this.state.localAudio,
                 icon: 'mute',
                 inActiveIcon: 'unmute',
@@ -697,25 +720,20 @@ class Student extends React.Component {
                 key: 'video-icon',
                 isActive: this.state.localVideo,
                 icon: 'video',
-                inActiveIcon: 'videoOfff',
+                inActiveIcon: 'videoOff',
                 onClick: this.toggleTrack.bind(this,"video")
               },
               {
+                isDisplay: rtmLoggedIn,
                 key: 'unpin-icon',
-                isActive: this.state.pin,
-                icon: 'unpin',
-                inActiveIcon: 'pin',
+                isActive: !this.state.pin,
+                icon: 'raisedActive',
+                inActiveIcon: 'unpin',
                 onClick: this.toggleTrack.bind(this,"pin")
               }
             ]}/>
         </div>
-        
-        {(rtmLoggedIn && this.state.openChat) && <ChatCard 
-        onRef={ref => (this.chatRef = ref)}
-        sendMessage = {this.sendMessage}
-        name={this.state.uid}
-        userId={this.state.uid}
-        />}
+       
       </div>
       </AppDashboard>
     );

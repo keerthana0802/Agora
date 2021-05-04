@@ -1,4 +1,28 @@
 .app-container {
-  height: 100vh;
-  max-height: 100vh;
+  // height: 100vh;
+  // max-height: 100vh;
+  // .right-container {
+  //   width: 100%;
+  //   display: flex;
+  //   flex-direction: row;
+  //   flex-wrap: wrap;
+    .main-card {
+      display: flex;
+      width: 100%;
+      margin-bottom: 10px;
+      .rightContainer{
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        flex-wrap: wrap;
+        max-height: 100%;
+        overflow-y: auto;isplay: flex;
+        width: 100%;
+        max-width: 100%;
+        flex-wrap: wrap;
+        max-height: 100%;
+        overflow-y: auto;
+      }
+    }
+  // }
 }

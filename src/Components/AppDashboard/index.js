@@ -1,12 +1,11 @@
-import { useState, useCallback } from 'react';
+// import { useState, useCallback } from 'react';
 import AppHeader from '../AppHeader'
-
+import './Styles/DashboardStyles.css'
 function AppDashboard(props) {
-  const [ height, setHeight ] = useState(0)
-  const {children} = props
+  const {children, ...extraProps} = props
   return (
     <div className="app-container">
-      <AppHeader />
+      <AppHeader {...extraProps}/>
       {children}
     </div>
   )

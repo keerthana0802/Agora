@@ -6,7 +6,11 @@ function Footer({btnList=[]}) {
   return (
     <div className='footer-card'>
     {
-      btnList.map(data => <ButtonIcon {...data}/>)
+      btnList.map(data => {
+        const {isDisplay=true} = data
+        if(isDisplay) return <ButtonIcon key={data.key} {...data}/>
+        return null
+      })
     }
     </div>
   )

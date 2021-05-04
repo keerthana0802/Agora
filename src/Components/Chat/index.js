@@ -9,9 +9,7 @@ class ChatCard extends React.Component {
     super(props)
 
     this.state = {
-      inputText: '',
-      chatBox: [],
-      chatOnline: true
+      inputText: ''
     }
   }
 
@@ -30,7 +28,7 @@ class ChatCard extends React.Component {
   }
 
   sendChatMessage = () => {
-    let chatBox = this.state.chatBox
+    let chatBox = this.props.chatBox
     let text = this.state.inputText.trim()
     if(!text) {
       return
@@ -46,8 +44,8 @@ class ChatCard extends React.Component {
       userId: this.props.userId}
     chatBox.push(data)
     this.props.sendMessage({data: JSON.stringify(data), type: 'chat', received_at: todayDate})
-
-    this.setState({inputText: '', chatBox}, ()=> {
+    this.props.onUpdateChat(chatBox)
+    this.setState({inputText: ''}, ()=> {
       this.scrollBottomChat()
     })
   }
@@ -75,22 +73,7 @@ class ChatCard extends React.Component {
   onChangeInput = (event) => {
     this.setState({inputText: event.target.value})
   }
-
-  onEvents = (json) => {
-    // let json = JSON.parse(msg)
-    let data = JSON.parse(json.data)
-    let chatBox = this.state.chatBox
-    if(json.received_at) {
-      data = {...data, dateAt: json.received_at }
-
-    }
-    chatBox.push(data)
-    this.setState(chatBox, () => {
-      // if (this.chatMsgRef && this.chatMsgRef.scrollHeight) {
-      //   this.chatMsgRef.scrollTop = this.chatMsgRef.scrollHeight
-      // }
-    })
-  }
+ 
   handleChatMsgRef =(ref) => {
     this.chatMsgRef = ref
   }
@@ -99,7 +82,8 @@ class ChatCard extends React.Component {
 
   render() {
     // let params = parseUrl() || {}
-    let {inputText, chatBox} = this.state
+    let {inputText} = this.state
+    let {chatBox} = this.props
     return (
       <div className='chatContainer'>
         <Header />
