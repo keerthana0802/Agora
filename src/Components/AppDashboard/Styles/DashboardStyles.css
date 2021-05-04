@@ -1,0 +1,17 @@
+.app-container .main-card {
+  display: flex;
+  width: 100%;
+  margin-bottom: 10px; }
+  .app-container .main-card .rightContainer {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    flex-wrap: wrap;
+    max-height: 100%;
+    overflow-y: auto;
+    isplay: flex;
+    width: 100%;
+    max-width: 100%;
+    flex-wrap: wrap;
+    max-height: 100%;
+    overflow-y: auto; }

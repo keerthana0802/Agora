@@ -1,0 +1,30 @@
+.chatInputCard {
+  background: #FFFFFF;
+  border: 1px solid #E2E2E2;
+  box-shadow: 0px 2px 6px rgba(91, 22, 170, 0.12), inset 1px 0px 3px rgba(255, 255, 255, 0.5);
+  border-radius: 18px;
+  min-height: 40px;
+  height: 40px;
+  max-height: 80px;
+  overflow: auto;
+}
+.chatInputCard input {
+  /*font-size: 16px;*/
+  /*line-height: 4px;*/
+  flex: 1;
+  border: none;
+  height: 100%;
+  box-shadow: none;
+  padding-left: 24px;
+  outline: none;
+  width: 100%;
+  &:focus {
+    box-shadow: none;
+    outline: none;
+  }
+}
+
+.chatInputCard input:focus {
+  box-shadow: none;
+  outline: none;
+}

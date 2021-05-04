@@ -1,0 +1,36 @@
+@import '../../../../Assets/Style/variables';
+.video-container {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 250px;
+  height: 250px;
+  margin: 10px;
+  animation: amin 0.4s; 
+  transition: all 0.3s;
+  .video-name {
+    background: #DFE6EC;
+    border-radius: 8px;
+    font-family: $primary-font-regular;
+    color: #666666;
+    font-size: 14px;
+    padding: 10px;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    text-transform: capitalize;
+    line-height: 19px;
+    box-sizing: border-box;
+    margin-top: -6px;
+  }
+  .video-remoteStream {
+    height: 100%;
+    width: 100%;
+    border: 1px solid gray;
+    border-radius: 10px;
+    overflow: hidden;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    box-sizing: border-box;
+  }
+}

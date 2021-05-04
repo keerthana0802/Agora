@@ -1,26 +1,43 @@
 import React from 'react';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import '../../App.css';
-import './Styles/TeacherSyles.css'
 import RemoteStream from '../../Components/RemoteStream';
-
+import ChatCard from '../../Components/Chat'
 import VideocamIcon from '@material-ui/icons/Videocam';
 import VideocamOffIcon from '@material-ui/icons/VideocamOff';
 import MicIcon from '@material-ui/icons/Mic';
 import MicOffIcon from '@material-ui/icons/MicOff';
+import AppDashboard from '../../Components/AppDashboard'
+import Footer from '../../Components/Common/Footer'
+import VideoCard from '../../Components/Common/VideoCard'
 import AgoraRTM from 'agora-rtm-sdk';
+import {Images} from '../../Themes'
+import ClassNames from 'classnames'
+import _get from 'lodash/get'
+import '../Styles/LayoutStyles.css'
+import {parseUrl} from '../../Lib/Utilities'
+
+// var videoProfiles = [
+//   { label: "120p_1", detail: "120p_1, 160×120, 15fps, 65Kbps", value: "120p_1" },
+//   { label: "180p_1", detail: "180p_1, 320×180, 15fps, 140Kbps", value: "180p_1" },
+//   { label: "240p_1", detail: "240p_1, 320×240, 15fps, 200Kbps", value: "240p_1" }
+// ]
 
 
 class Teacher extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      chatBox: [],
+      openChat: false,
       localStreamInitiated: false,
       remoteStreams: {
 
       },
+      connectionState: 'LOADING',
       localVideo: true,
       localAudio: true,
+      pin: false,
       videoPublished: false,
       audioPublished: false,
       rtmLoggedIn: false,
@@ -47,7 +64,7 @@ class Teacher extends React.Component {
     this.RTMChannel = null;
     this.RTCClient = null;
     this.RTMClient = null;
-
+    this.chatRef  = null;
     this.channel = "web_share";
     this.localVideoView = React.createRef();
     this.appId = "a5431333004841fea39dc13668e92113";
@@ -60,9 +77,14 @@ class Teacher extends React.Component {
   }
 
 
-
+  onUpdateChat = (chatBox) => {
+    this.setState({chatBox})
+  }
 
   componentDidMount() {
+    //let params = parseUrl()
+    let userId = this.setUuid()
+    this.setState({uid: userId})
     this.initRTM();
     this.initLocalStream();
     this.onDeviceChange();
@@ -123,8 +145,6 @@ class Teacher extends React.Component {
     }).catch(error => {
       console.log(" =>> failed to login RTM", error)
     })
-
-    
   }
 
   getAVStates = async () => {
@@ -169,8 +189,21 @@ class Teacher extends React.Component {
   }
 
   subscribeChannelEvents = () => {
-    this.RTMChannel.on('ChannelMessage', (message, memberId) => {
-      console.log("ChannelMessage =>>", message, memberId)
+    this.RTMChannel.on('ChannelMessage', ({text}, memberId) => {
+      console.log("ChannelMessage =>>", text, memberId)
+      let json = JSON.parse(text);
+      if(json.type === 'slide') {
+        this.setState({activeSlideId:json.slideid})
+      } else if(json.type === 'chat') {
+        this.onEvents(json)
+      } else if(json.type === 'pin') {
+        let userId = json.user_id
+        let remoteStreams = this.state.remoteStreams
+        if(remoteStreams[userId]) {
+          remoteStreams[userId].pin = json.value
+          this.setState({remoteStreams})
+        }
+      }
     })
     this.RTMChannel.on('MemberJoined', (memberId) => {
       console.log("MemberJoined =>>", memberId)
@@ -178,6 +211,7 @@ class Teacher extends React.Component {
     this.RTMChannel.on('MemberLeft', memberId => {
       console.log("MemberLeft =>>", memberId)
     });
+
 
     this.RTMChannel.on('AttributesUpdated', attributes => {
       console.log("AttributesUpdated =>>", attributes);
@@ -188,8 +222,25 @@ class Teacher extends React.Component {
 
 
   subscribeClientEvents = () => {
-    this.RTMClient.on('ConnectionStateChanged', (event) => {
-      console.log("ConnectionStateChanged =>>", event)
+    this.RTMClient.on('ConnectionStateChanged', (newState, reason) => {
+      console.log("ConnectionStateChanged =>>", newState,reason )
+      if (newState === 'CONNECTED') {
+        if(this.RTMClient.getChannelAttributesByKeys) {
+          this.RTMClient.getChannelAttributesByKeys(`${this.channel}`, ['activeSlideId']).then(data => {
+            let activeSlideId = _get(data, 'activeSlideId.value') || ''
+            if(!activeSlideId) return
+            activeSlideId = JSON.parse(activeSlideId)
+            console.log('activeSlideId', activeSlideId)
+            if(!this.state.activeSlideId) {
+              this.setState({activeSlideId})
+            }
+           
+          })
+        }
+      }
+      this.setState({
+        connectionState: newState
+      });
     })
     this.RTMClient.on('MessageFromPeer', (message, peerId) => {
       console.log("MessageFromPeer =>>", message, peerId)
@@ -201,21 +252,20 @@ class Teacher extends React.Component {
       let tuteAVControls = { ...this.state.tuteAVControls };
       tuteAVControls[data.type] = data.value;
       this.setState({ tuteAVControls })
-
     })
   }
 
-  muteUser = (type) => {
+  muteUser = (type, action) => {
     if (type === 'audio') {
-      if (this.state.localAudio) {
-        this.audioTrack.setEnabled(false);
-        this.setState({ localAudio: false });
-      }
+      // if (this.state.localAudio) {
+        this.audioTrack.setEnabled(action);
+        this.setState({ localAudio: action });
+      // }
     } else if (type === 'video') {
-      if (this.state.localVideo) {
-        this.videoTrack.setEnabled(false);
-        this.setState({ localVideo: false });
-      }
+      // if (this.state.localVideo) {
+        this.videoTrack.setEnabled(action);
+        this.setState({ localVideo: action });
+      // }
     }
   }
 
@@ -224,9 +274,8 @@ class Teacher extends React.Component {
       // [this.audioTrack, this.videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
       this.videoTrack = await AgoraRTC.createCameraVideoTrack({ encoderConfig: this.state.selectedProfile });
       this.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-  
       // this.videoTrack.setOptimizationMode("motion");
-      this.videoTrack.play(this.localVideoView.current);
+      this.videoTrack.play(this.state.uid);
     } catch (error) {
       alert("please check the permission for audio/camera")
       console.log("Weeoe", error)
@@ -298,10 +347,6 @@ class Teacher extends React.Component {
       mode: 'rtc',
       codec: 'vp8'
     })
-    this.screenClient = AgoraRTC.createClient({
-      mode: 'rtc',
-      codec: 'vp8'
-    })
     this.subscribeEvents();
   }
 
@@ -311,9 +356,9 @@ class Teacher extends React.Component {
     this.RTCClient.on('stream-subscribed', (evt) => {
       console.log('stream-subscribed', evt)
     })
-     this.RTCClient.on('stopScreenSharing', ()=> {
-      this.screenTrack.stop();
-      this.screenTrack.close();
+    this.RTCClient.on('stopScreenSharing', ()=> {
+      this.localStream.stop();
+      this.localStream.close();
     })
     this.RTCClient.on('user-left', this.userLeft);
     this.RTCClient.on('user-joined', this.userJoined);
@@ -323,8 +368,8 @@ class Teacher extends React.Component {
   }
 
   networkQuality = (stats) => {
-    // console.log("=>> downlinkNetworkQuality", stats.downlinkNetworkQuality);
-    // console.log("=>> uplinkNetworkQuality", stats.uplinkNetworkQuality);
+    console.log("=>> downlinkNetworkQuality", stats.downlinkNetworkQuality);
+    console.log("=>> uplinkNetworkQuality", stats.uplinkNetworkQuality);
     let networkQuality = this.state.networkQuality;
     let newNetworkQuality = stats.uplinkNetworkQuality;
     if (newNetworkQuality > 0 && networkQuality !== newNetworkQuality) {
@@ -337,8 +382,8 @@ class Teacher extends React.Component {
       }
       this.setState({ networkQuality: newNetworkQuality })
     }
-    // let rcstats = this.RTCClient.getRTCStats();
-    // console.log("=>> RC Stats", rcstats)
+    let rcstats = this.RTCClient.getRTCStats();
+    console.log("=>> RC Stats", rcstats)
   }
 
 
@@ -351,7 +396,7 @@ class Teacher extends React.Component {
 
   volumeIndicator = async (volumes) => {
     volumes.forEach((volume, index) => {
-      // console.log(` =>> ${index} UID ${volume.uid} Level ${volume.level}`);
+      console.log(` =>> ${index} UID ${volume.uid} Level ${volume.level}`);
       if (volume.level >= 5) {
         this.updateSpeaker(volume.uid);
       }
@@ -390,7 +435,8 @@ class Teacher extends React.Component {
     remoteStreams[user.uid] = {
       uid: user.uid,
       videoState: false,
-      audioState: false
+      audioState: false,
+      pin: false
     };
 
     if (!tuteControls[user.uid]) {
@@ -412,13 +458,14 @@ class Teacher extends React.Component {
     await this.RTCClient.setStreamFallbackOption(user.uid, 2)
     let remoteStreams = { ...this.state.remoteStreams };
     let uid = user.uid;
-    if (mediaType === "video") {
+    if (mediaType === "video" && remoteStreams[uid]) {
       user.videoTrack.play(uid + "");
       remoteStreams[uid].videoState = true;
     }
-    else if (mediaType === "audio") {
+    else if (mediaType === "audio" && remoteStreams[uid]) {
       user.audioTrack.play();
       remoteStreams[uid].audioState = true;
+    } else if (mediaType === "screen") {
     }
     this.setState({ remoteStreams });
 
@@ -444,6 +491,7 @@ class Teacher extends React.Component {
     if (this.RTCClient !== null) {
       this.RTCClient.join(this.appId, this.channel, null, this.state.uid).then(uid => {
         this.rtm.params.uid = uid;
+        this.subscribeChannelEvents()
         this.RTCClient.enableDualStream().then(() => {
           console.log("Enable Dual stream success!");
         }).catch(err => {
@@ -457,7 +505,7 @@ class Teacher extends React.Component {
           this.publishTrack(this.audioTrack);
         }
       }).catch(error => {
-       console.log("failed to join channel ", error);
+        console.log("failed to join channel ", error);
       })
     }
   }
@@ -465,7 +513,7 @@ class Teacher extends React.Component {
   toggleTrack = async (track) => {
 
 
-    if (track === 'video') {
+    if (track === 'video' && this.state.tuteAVControls.video) {
       if (this.state.localVideo) {
         await this.videoTrack.setEnabled(false);
       } else {
@@ -477,7 +525,7 @@ class Teacher extends React.Component {
       }
       this.setState({ localVideo: !this.state.localVideo })
 
-    } else if (track === 'audio') {
+    } else if (track === 'audio' && this.state.tuteAVControls.audio) {
       if (this.state.localAudio) {
         await this.audioTrack.setEnabled(false);
       } else {
@@ -488,18 +536,65 @@ class Teacher extends React.Component {
 
       }
       this.setState({ localAudio: !this.state.localAudio });
+    } else if(track === 'pin') {
+      this.setState({pin: !this.state.pin})
+      this.sendMessage({
+        type: 'pin',
+        value: !this.state.pin,
+        student_user_id: this.state.uid
+      })
+      
+      
     }
 
   }
+  setUuid = () => {
+    return Math.random().toString(16).slice(2)
+  }
+
+  sendMessage = (msg, streamId ) => {
+    if(!msg) return 
+    let userId = this.state.uid
+    let lastMessageId = this.setUuid()
+    let todayDate = new Date()
+    todayDate = todayDate.getTime()
+    let data = JSON.stringify({received_at: todayDate, ...msg, user_id:userId , user_type: 'teacher', id : lastMessageId, class_room_id:this.channel})
+    this.sendChannelMessage(data)
+  }
+
+  sendChannelMessage = (data) => {
+    this.RTMChannel && this.RTMChannel.sendMessage({text: data}).then(() => {
+      console.log('Success sending message', data)
+    }).catch(error => {
+      console.log('Failed sending message:', error)
+    });
+  }
+
   onAVChange = (id, type, value) => {
     let tuteControls = { ...this.state.tuteControls }
     let ctrl = tuteControls[id] ? { ...tuteControls[id] } : {};
     ctrl[type] = !value;
     tuteControls[id] = ctrl;
+    let text = JSON.stringify({ type, value: !value });
+    if(type === 'pin') {
+      this.sendMessage({
+        type: 'pin',
+        value: false,
+        student_user_id: id
+      })
+      tuteControls[id][type] = false
+      let remoteStreams = this.state.remoteStreams
+      if(remoteStreams[id]) {
+        remoteStreams[id].pin = false
+        this.setState({remoteStreams})
+      }
+      this.setState({ tuteControls });
+      return
+    }
 
     //this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'av': JSON.stringify(tuteControls) }).then(res => {
     //  console.log(" =>> AV updated successfully!");
-    let text = JSON.stringify({ type, value: !value });
+    
     this.RTMClient.sendMessageToPeer(
       { text }, id.toString())
     .then(result => {
@@ -520,7 +615,6 @@ class Teacher extends React.Component {
     })
   }
 
-
   leaveChannel = () => {
     this.RTMChannel.leave().then(() => {
       console.log("Logged out from channel");
@@ -535,111 +629,124 @@ class Teacher extends React.Component {
       console.log("=>> Error on leaving channel ", error);
     })
   }
-  handleShow = slideid => {
-     if(this.state.activeSlideId) {
-      slideid = null
-    }
-    this.onSlideChange(slideid)
-  }
+
   toggleProfile = (event) => {
     let value = event.target.value;
     this.setVideoProfile(value);
   }
 
-  onSlideChange = (slideid=1) => {
-    let that = this
-    this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'activeSlideId': `${slideid}` }).then(res => {
-      console.log(" =>> activeSlideId updated successfully!");
-      let text = JSON.stringify({ type:'slide', slideid  });
-      //sendMessage({text: data}).then(() => {
-      that.RTMChannel.sendMessage(
-        { text })
-        .then(result => {
-          that.setState({activeSlideId: slideid})
-          console.log("send Message =>>", result);
-        }).catch(error => {
-          console.log("failed to send peer meg", error);
-        })
-    })
+  handleFooterClick = (key) => {
+    this.setState({[key]: !this.state[key]})
+  }
+  onEvents = (json) => {
+    // let json = JSON.parse(msg)
+    let data = JSON.parse(json.data)
+    let chatBox = this.state.chatBox
+    if(json.received_at) {
+      data = {...data, dateAt: json.received_at }
+
+    }
+    chatBox.push(data)
+    this.setState({chatBox})
   }
 
-   initLocalScreenStream = async () => {
-    if(this.RTCClient) {
-      this.shareClient = AgoraRTC.createClient({ mode:'rtc',  codec: 'vp8'});
-      this.shareClient.join(this.appId,this.channel, null, `${this.state.uid}-shareScreen`).then(uid => {
-      AgoraRTC.createScreenVideoTrack({encoderConfig: "1080p_1"}
-        ).then(localScreenTrack => {
-          // localScreenTrack.play('local_stream')
-          this.shareClient.publish(localScreenTrack).then(res => {
-           console.log(res)
-          }).catch(err => {
-            console.log(err)
-          })
-          localScreenTrack.on('track-ended', () => {
-            localScreenTrack.close();
-            this.shareClient.leave()
-          })
-        })
-         
-      }).catch(err => {
-        console.log(err);
-      })
-    }
-    }
-
-  sharingScreen = (e) => {
-   this.initLocalScreenStream()
-  };
-
-  
   render() {
     const { remoteStreams, rtmLoggedIn, rtmChannelJoined, tuteControls, speakers } = this.state;
-    // console.log("streams =>>", remoteStreams);
-    // console.log("Speaker =>>", speakers);
+    console.log("streams =>>", remoteStreams);
+    console.log("Speaker =>>", speakers);
     let slides = [{
       id: 1, image: 'http://passyworldofmathematics.com/Images/pwmImagesFour/PythagGuitarDiag1250wideJPG.jpg'},
       {id: 2, image: 'https://i.pinimg.com/564x/0e/99/e3/0e99e301ab31095fbed0f737f40870df.jpg'},
       {id: 3, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Yousician-Guitar-learning-app-Android.jpg'},
       {id:  4, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Guitar-Plus.png'}]
-
+    let params = parseUrl()
     return (
-      <div className="teacher-container">
-        {rtmChannelJoined && <div className='header'>
-          <button className="btn-card" onClick={this.sharingScreen}>
-              Share Screen
-            </button>
-           <button className='btn-card' onClick={() => this.handleShow(1)}>
-            {this.state.activeSlideId ? 'End Slides': 'Slides Show' }
-          </button>
-          <button className="btn-card" onClick={this.leaveChannel}>End Session</button>
-        </div>}
-        <div className='main-container'>
-        <div className="localStreamContainer">
-          <input className="input" value={this.state.uid} onChange={(e) => this.setState({ uid: e.target.value })} placeholder="enter user name" />
-          <div id="localView" ref={this.localVideoView}></div>
-          <div className="controls">
-            <div className="controlIcon" onClick={() => this.toggleTrack("video")}>{this.state.localVideo ? <VideocamIcon fontSize="large" /> : <VideocamOffIcon fontSize="large" />}</div>
-            <div className="controlIcon" onClick={() => this.toggleTrack("audio")}>{this.state.localAudio ? <MicIcon fontSize="large" /> : <MicOffIcon fontSize="large" />}</div>
-          </div>
-          {!rtmLoggedIn && <button className="join" onClick={this.loginToRTM}>Join</button>}
-          
-       </div>
-        <div className="rightContainer">
-          <div className="remoteStreamContainer">
-            {Object.keys(remoteStreams).map((item, index) => <RemoteStream speaking={speakers.indexOf(item) > -1} key={item} isTute={this.state.isTute} onAVChange={this.onAVChange} tuteControls={tuteControls[item]} stream={remoteStreams[item]} id={item} />)}
-          </div>
-        </div>
-        <div id='local_stream' style={{width: '100px', height: '200px'}}/>
-        
-        {rtmLoggedIn && this.state.activeSlideId && <div className ='slides-container'>
-          <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
-          <div className='btn-next-prev'>
-            <button disabled={this.state.activeSlideId === 1} onClick={() => this.onSlideChange(this.state.activeSlideId-1)}> {'<'} </button>
-            <button disabled={slides.length === this.state.activeSlideId} onClick={() => this.onSlideChange(this.state.activeSlideId+1)}> {'>'}</button>
+      <AppDashboard 
+        btnList={[
+          {
+            isDisplay: rtmLoggedIn,
+            key: 'session-start-icon',
+            title: 'Start session'
+          },
+          {isDisplay: rtmLoggedIn,
+          key: 'remaining-timer-icon',
+          title: '25 minutes'},
+          {isDisplay: rtmLoggedIn,
+          key: 'Support-icon',
+          title: 'Support'},
+          { key: 'login-icon',
+          onClick:  rtmLoggedIn ? this.leaveChannel : this.loginToRTM,
+          title: rtmLoggedIn ? 'END SESSION' : 'Join'}
+        ]}>
+      <div className='app-main-container'>
+        <div className='right-container'>
+          <div className="class-container">
+            <div className="main-card">
+              <div className="rightContainer">
+                <VideoCard id={this.state.uid} ref={this.localVideoView} name={params.name}/>
+                {rtmLoggedIn && Object.keys(remoteStreams).map((item, index) => (
+                  <RemoteStream
+                    speaking={speakers.indexOf(item) > -1}
+                    key={item}
+                    isTute={this.state.isTute}
+                    onAVChange={this.onAVChange}
+                    tuteControls={tuteControls[item]}
+                    stream={remoteStreams[item]}
+                    id={item}
+                  />
+                ))}
+              </div>
+               {(rtmLoggedIn && this.state.openChat) && <ChatCard 
+                chatBox={this.state.chatBox}
+                onUpdateChat={this.onUpdateChat}
+                onRef={ref => (this.chatRef = ref)}
+                sendMessage = {this.sendMessage}
+                name={params.name || this.state.uid}
+                userId={this.state.uid}
+                />}
             </div>
-        </div>}
+          </div>
+          {this.state.activeSlideId && <div className ='slides-container'>
+            <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
+          </div>}
+          <Footer 
+            rtmLoggedIn={rtmLoggedIn}
+            btnList={[
+              {
+                isDisplay: rtmLoggedIn,
+                key: 'chat-icon',
+                isActive: !this.state.openChat,
+                icon: 'chat',
+                inActiveIcon: 'inactiveChat',
+                onClick: this.handleFooterClick.bind(this,'openChat')
+              },
+              {  
+                key: 'mute-icon',
+                isActive: this.state.localAudio,
+                icon: 'mute',
+                inActiveIcon: 'unmute',
+                onClick: this.toggleTrack.bind(this,"audio")
+              },
+              { 
+                key: 'video-icon',
+                isActive: this.state.localVideo,
+                icon: 'video',
+                inActiveIcon: 'videoOff',
+                onClick: this.toggleTrack.bind(this,"video")
+              },
+              {
+                isDisplay: rtmLoggedIn,
+                key: 'unpin-icon',
+                isActive: !this.state.pin,
+                icon: 'raisedActive',
+                inActiveIcon: 'unpin',
+                onClick: this.toggleTrack.bind(this,"pin")
+              }
+            ]}/>
         </div>
+       
       </div>
+      </AppDashboard>
     );
   }
 }
