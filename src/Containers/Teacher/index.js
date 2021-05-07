@@ -3,16 +3,16 @@ import AgoraRTC from 'agora-rtc-sdk-ng';
 import '../../App.css';
 import RemoteStream from '../../Components/RemoteStream';
 import ChatCard from '../../Components/Chat'
-import VideocamIcon from '@material-ui/icons/Videocam';
-import VideocamOffIcon from '@material-ui/icons/VideocamOff';
-import MicIcon from '@material-ui/icons/Mic';
-import MicOffIcon from '@material-ui/icons/MicOff';
+// import VideocamIcon from '@material-ui/icons/Videocam';
+// import VideocamOffIcon from '@material-ui/icons/VideocamOff';
+// import MicIcon from '@material-ui/icons/Mic';
+// import MicOffIcon from '@material-ui/icons/MicOff';
 import AppDashboard from '../../Components/AppDashboard'
 import Footer from '../../Components/Common/Footer'
 import VideoCard from '../../Components/Common/VideoCard'
 import AgoraRTM from 'agora-rtm-sdk';
-import {Images} from '../../Themes'
-import ClassNames from 'classnames'
+// import {Images} from '../../Themes'
+// import ClassNames from 'classnames'
 import _get from 'lodash/get'
 import '../Styles/LayoutStyles.css'
 import {parseUrl} from '../../Lib/Utilities'
@@ -651,7 +651,7 @@ class Teacher extends React.Component {
   }
 
   render() {
-    const { remoteStreams, rtmLoggedIn, rtmChannelJoined, tuteControls, speakers } = this.state;
+    const { remoteStreams, rtmLoggedIn, tuteControls, speakers } = this.state;
     console.log("streams =>>", remoteStreams);
     console.log("Speaker =>>", speakers);
     let slides = [{
