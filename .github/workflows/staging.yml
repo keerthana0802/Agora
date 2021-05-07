@@ -13,8 +13,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
-      - name: Load Npm Cache
-        uses: actions/cache@v2
       - name: NPM install
         run: npm ci
       - name: NPM build
