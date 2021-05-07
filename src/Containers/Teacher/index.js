@@ -10,12 +10,14 @@ import ChatCard from '../../Components/Chat'
 import AppDashboard from '../../Components/AppDashboard'
 import Footer from '../../Components/Common/Footer'
 import VideoCard from '../../Components/Common/VideoCard'
+import SessionPlanCard from '../../Components/Teacher/SessionPlanCard'
 import AgoraRTM from 'agora-rtm-sdk';
 // import {Images} from '../../Themes'
-// import ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import _get from 'lodash/get'
-import '../Styles/LayoutStyles.css'
+import './Styles/TeacherSyles.css'
 import {parseUrl} from '../../Lib/Utilities'
+
 
 // var videoProfiles = [
 //   { label: "120p_1", detail: "120p_1, 160×120, 15fps, 65Kbps", value: "120p_1" },
@@ -55,7 +57,7 @@ class Teacher extends React.Component {
 
       },
       speakers: [],
-
+      screenType: ''
     }
 
 
@@ -650,8 +652,34 @@ class Teacher extends React.Component {
     this.setState({chatBox})
   }
 
+  startSesstion = () => {
+    this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'screenType': 'startSession'}).then(res => {
+      console.log(" =>> AV updated successfully!");
+      this.setState({screenType: 'startSession'})
+      let text = { type: 'screenType' }
+      this.sendMessage(text)
+    })
+  }
+
+  onSlideChange = (slideid=1) => {
+    let that = this
+    this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'activeSlideId': `${slideid}` }).then(res => {
+      console.log(" =>> activeSlideId updated successfully!");
+      let text = JSON.stringify({ type:'slide', slideid  });
+      //sendMessage({text: data}).then(() => {
+      that.RTMChannel.sendMessage(
+        { text })
+        .then(result => {
+          that.setState({activeSlideId: slideid})
+          console.log("send Message =>>", result);
+        }).catch(error => {
+          console.log("failed to send peer meg", error);
+        })
+    })
+  }
+
   render() {
-    const { remoteStreams, rtmLoggedIn, tuteControls, speakers } = this.state;
+    const { remoteStreams, rtmLoggedIn, tuteControls, speakers, screenType } = this.state;
     console.log("streams =>>", remoteStreams);
     console.log("Speaker =>>", speakers);
     let slides = [{
@@ -660,13 +688,15 @@ class Teacher extends React.Component {
       {id: 3, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Yousician-Guitar-learning-app-Android.jpg'},
       {id:  4, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Guitar-Plus.png'}]
     let params = parseUrl()
+    let isStartSession = screenType === 'startSesstion'
     return (
       <AppDashboard 
         btnList={[
           {
             isDisplay: rtmLoggedIn,
             key: 'session-start-icon',
-            title: 'Start session'
+            title: 'Start session',
+            onClick: this.startSesstion,
           },
           {isDisplay: rtmLoggedIn,
           key: 'remaining-timer-icon',
@@ -678,7 +708,7 @@ class Teacher extends React.Component {
           onClick:  rtmLoggedIn ? this.leaveChannel : this.loginToRTM,
           title: rtmLoggedIn ? 'END SESSION' : 'Join'}
         ]}>
-      <div className='app-main-container'>
+      <div className={ClassNames('app-main-container', `${screenType}`)}>
         <div className='right-container'>
           <div className="class-container">
             <div className="main-card">
@@ -709,7 +739,7 @@ class Teacher extends React.Component {
           {this.state.activeSlideId && <div className ='slides-container'>
             <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
           </div>}
-          <Footer 
+          {(!rtmLoggedIn || !!isStartSession) && <Footer 
             rtmLoggedIn={rtmLoggedIn}
             btnList={[
               {
@@ -733,16 +763,9 @@ class Teacher extends React.Component {
                 icon: 'video',
                 inActiveIcon: 'videoOff',
                 onClick: this.toggleTrack.bind(this,"video")
-              },
-              {
-                isDisplay: rtmLoggedIn,
-                key: 'unpin-icon',
-                isActive: !this.state.pin,
-                icon: 'raisedActive',
-                inActiveIcon: 'unpin',
-                onClick: this.toggleTrack.bind(this,"pin")
               }
-            ]}/>
+            ]}/>}
+            {(rtmLoggedIn && !isStartSession) && <SessionPlanCard />}
         </div>
        
       </div>
