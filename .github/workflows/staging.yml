@@ -27,4 +27,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Deploy app build to S3 bucket
-        run: aws s3 sync ./dist/ s3://${{secrets.AWS_BUCKET}} --delete  
+        run: aws s3 sync ./build/ s3://${{secrets.AWS_BUCKET}} --delete  
