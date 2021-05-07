@@ -1,0 +1,32 @@
+name: Staging Deployment
+
+on:
+  push:
+    branches:
+      - development
+jobs:
+  build:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+      - name: Load Npm Cache
+        uses: actions/cache@v2
+      - name: NPM install
+        run: npm ci
+      - name: NPM build
+        run: npm run build
+        env:
+          PUBLIC_URL: /
+          BUILD_ENV: development
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          AWS-REGION: ${{ secrets.AWS_REGION }}
+      - name: Deploy app build to S3 bucket
+        run: aws s3 sync ./dist/ s3://${{secrets.AWS_BUCKET}} --delete  
