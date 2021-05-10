@@ -19,12 +19,19 @@ body {
     flex-direction: column; }
     .app-main-container .right-container .class-container {
       display: flex;
-      height: calc(100% - 64px); }
+      height: calc(100% - 64px - 10px);
+      margin-bottom: 20px; }
     .app-main-container .right-container .footer-card {
       display: flex; }
 
+.app-main-container.startSession .main-card {
+  align-items: flex-start; }
+
 .app-main-container.startSession .right-container {
-  flex-direction: row; }
+  flex-direction: row;
+  padding-right: 10px;
+  box-sizing: border-box;
+  width: 100%; }
 
 .app-main-container.startSession .video-container, .app-main-container.startSession .remoteStreamItem {
   width: 200px;

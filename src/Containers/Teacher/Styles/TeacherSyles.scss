@@ -28,8 +28,14 @@
 
 .app-main-container {
   &.startSession {
+    .main-card {
+      align-items: flex-start;
+    }
     .right-container {
       flex-direction: row;
+      padding-right: 10px;
+      box-sizing: border-box;
+      width: 100%;
     }
     .video-container, .remoteStreamItem {
       width: 200px;

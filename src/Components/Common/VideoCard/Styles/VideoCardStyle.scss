@@ -33,4 +33,12 @@
     border-bottom-left-radius: 0;
     box-sizing: border-box;
   }
+  .video-control {
+    position: absolute;
+    bottom: 8px;
+    display: flex;
+    .btn-circle {
+      border-radius: 100%;
+    }
+  }
 }

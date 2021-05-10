@@ -13,14 +13,6 @@ class ChatCard extends React.Component {
     }
   }
 
-  componentDidMount() {
-    this.props.onRef(this)
-  }
-
-  componentWillUnmount = () => {
-    this.props.onRef(undefined)
-  }
-
   onKeyDownInputChat = (e) => {
     if (e.key === 'Enter') {
       this.sendChatMessage()

@@ -57,7 +57,8 @@ class Teacher extends React.Component {
 
       },
       speakers: [],
-      screenType: ''
+      screenType: '',
+      activeSlideId:  null
     }
 
 
@@ -66,7 +67,6 @@ class Teacher extends React.Component {
     this.RTMChannel = null;
     this.RTCClient = null;
     this.RTMClient = null;
-    this.chatRef  = null;
     this.channel = "web_share";
     this.localVideoView = React.createRef();
     this.appId = "a5431333004841fea39dc13668e92113";
@@ -182,6 +182,10 @@ class Teacher extends React.Component {
 
     this.RTMChannel.join().then(res => {
       console.log(" =>> Channel joined successfull!", res);
+      this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'teacherId': this.state.uid }).then(res => {
+        let text = { type: 'teacherId', value: this.state.uid}
+        this.sendMessage(text)
+      })
       this.joinChannel();
       this.setState({ rtmChannelJoined: true })
 
@@ -228,15 +232,19 @@ class Teacher extends React.Component {
       console.log("ConnectionStateChanged =>>", newState,reason )
       if (newState === 'CONNECTED') {
         if(this.RTMClient.getChannelAttributesByKeys) {
-          this.RTMClient.getChannelAttributesByKeys(`${this.channel}`, ['activeSlideId']).then(data => {
+          this.RTMClient.getChannelAttributesByKeys(`${this.channel}`, ['activeSlideId','screenType']).then(data => {
+            console.log(data, 'getChannelAttributesByKeys')
             let activeSlideId = _get(data, 'activeSlideId.value') || ''
+            let screenType = _get(data, 'screenType.value') || ''
+            if(this.state.screenType !== screenType) {
+              this.updateScreenType(screenType)
+            }
             if(!activeSlideId) return
             activeSlideId = JSON.parse(activeSlideId)
             console.log('activeSlideId', activeSlideId)
             if(!this.state.activeSlideId) {
               this.setState({activeSlideId})
             }
-           
           })
         }
       }
@@ -652,11 +660,18 @@ class Teacher extends React.Component {
     this.setState({chatBox})
   }
 
-  startSesstion = () => {
-    this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'screenType': 'startSession'}).then(res => {
+  updateScreenType = (screenType) => {
+    this.setState({screenType},()=>{
+      this.videoTrack && this.videoTrack.play(this.state.uid);
+    })
+  }
+
+  handleClickStartSesstion = () => {
+    let screenType = this.state.screenType === 'startSession' ? 'icebreaking' : 'startSession'
+    this.RTMClient.addOrUpdateChannelAttributes(this.channel, { 'screenType': screenType}).then(res => {
       console.log(" =>> AV updated successfully!");
-      this.setState({screenType: 'startSession'})
-      let text = { type: 'screenType' }
+      this.updateScreenType(screenType)
+      let text = { type: 'screenType', value: screenType}
       this.sendMessage(text)
     })
   }
@@ -682,13 +697,8 @@ class Teacher extends React.Component {
     const { remoteStreams, rtmLoggedIn, tuteControls, speakers, screenType } = this.state;
     console.log("streams =>>", remoteStreams);
     console.log("Speaker =>>", speakers);
-    let slides = [{
-      id: 1, image: 'http://passyworldofmathematics.com/Images/pwmImagesFour/PythagGuitarDiag1250wideJPG.jpg'},
-      {id: 2, image: 'https://i.pinimg.com/564x/0e/99/e3/0e99e301ab31095fbed0f737f40870df.jpg'},
-      {id: 3, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Yousician-Guitar-learning-app-Android.jpg'},
-      {id:  4, image: 'https://techreviewpro-techreviewpro.netdna-ssl.com/wp-content/uploads/2017/12/Guitar-Plus.png'}]
     let params = parseUrl()
-    let isStartSession = screenType === 'startSesstion'
+    let isStartSession = screenType === 'startSession'
     return (
       <AppDashboard 
         btnList={[
@@ -696,7 +706,7 @@ class Teacher extends React.Component {
             isDisplay: rtmLoggedIn,
             key: 'session-start-icon',
             title: 'Start session',
-            onClick: this.startSesstion,
+            onClick: this.handleClickStartSesstion,
           },
           {isDisplay: rtmLoggedIn,
           key: 'remaining-timer-icon',
@@ -713,7 +723,7 @@ class Teacher extends React.Component {
           <div className="class-container">
             <div className="main-card">
               <div className="rightContainer">
-                <VideoCard id={this.state.uid} ref={this.localVideoView} name={params.name}/>
+                {!isStartSession && <VideoCard id={this.state.uid} ref={this.localVideoView} name={params.name}/>}
                 {rtmLoggedIn && Object.keys(remoteStreams).map((item, index) => (
                   <RemoteStream
                     speaking={speakers.indexOf(item) > -1}
@@ -726,20 +736,16 @@ class Teacher extends React.Component {
                   />
                 ))}
               </div>
-               {(rtmLoggedIn && this.state.openChat) && <ChatCard 
+               {(rtmLoggedIn && this.state.openChat && !isStartSession) && <ChatCard 
                 chatBox={this.state.chatBox}
                 onUpdateChat={this.onUpdateChat}
-                onRef={ref => (this.chatRef = ref)}
                 sendMessage = {this.sendMessage}
                 name={params.name || this.state.uid}
                 userId={this.state.uid}
                 />}
             </div>
           </div>
-          {this.state.activeSlideId && <div className ='slides-container'>
-            <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
-          </div>}
-          {(!rtmLoggedIn || !!isStartSession) && <Footer 
+          {(!rtmLoggedIn || !isStartSession) && <Footer 
             rtmLoggedIn={rtmLoggedIn}
             btnList={[
               {
@@ -765,7 +771,36 @@ class Teacher extends React.Component {
                 onClick: this.toggleTrack.bind(this,"video")
               }
             ]}/>}
-            {(rtmLoggedIn && !isStartSession) && <SessionPlanCard />}
+            {(rtmLoggedIn && !!isStartSession) && <SessionPlanCard
+              videoControl={{
+                audio: {  
+                  key: 'mute-icon',
+                  isActive: this.state.localAudio,
+                  icon: 'mute',
+                  inActiveIcon: 'unmute',
+                  onClick: this.toggleTrack.bind(this,"audio")
+                },
+                video: {
+                  key: 'video-icon',
+                  isActive: this.state.localVideo,
+                  icon: 'video',
+                  inActiveIcon: 'videoOff',
+                  onClick: this.toggleTrack.bind(this,"video")
+                }
+              }}
+              localVideoView={null}
+              uid={this.state.uid}
+              chatProps={{
+                openChat: this.state.openChat,
+                chatBox:this.state.chatBox,
+                onUpdateChat:this.onUpdateChat,
+                sendMessage:this.sendMessage,
+                name:params.name || this.state.uid,
+                userId:this.state.uid
+              }}
+              activeSlideId={this.state.activeSlideId}
+              onSlideChange={this.onSlideChange}
+            />}
         </div>
        
       </div>

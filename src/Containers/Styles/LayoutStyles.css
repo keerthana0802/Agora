@@ -19,6 +19,7 @@ body {
     flex-direction: column; }
     .app-main-container .right-container .class-container {
       display: flex;
-      height: calc(100% - 64px); }
+      height: calc(100% - 64px - 10px);
+      margin-bottom: 20px; }
     .app-main-container .right-container .footer-card {
       display: flex; }

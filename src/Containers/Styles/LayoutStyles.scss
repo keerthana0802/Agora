@@ -20,8 +20,8 @@ body {
     flex-direction: column;
     .class-container {
       display: flex;
-      height: calc(100% - 64px);
-
+      height: calc(100% - 64px - 10px);
+      margin-bottom: 20px;
     }
     
     .footer-card {

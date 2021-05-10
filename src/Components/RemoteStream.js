@@ -13,11 +13,11 @@ import speakingIcon from '@material-ui/icons/RecordVoiceOver'
 import './Styles/RemoteStreamStyle.css'
 
 const RemoteStream = (props) => {
-  const { id, stream, onAVChange, isTute = false, speaking = false, tuteControls = {} } = props;
+  const { id, stream, onAVChange, isTute = false, speaking = false, tuteControls = {}, teacherView } = props;
   const { audioState, videoState, pin=false } = stream;
 
   return (
-    <div className="remoteStreamItem">
+    <div className={ClassNames("remoteStreamItem",{teacherView: teacherView})}>
       <div className={speaking ? "remoteStream speaking" : "remoteStream"} id={id}>
         {speaking && <div className="speakerIcon"><img className="sicon" src={speakingIcon} alt="" /></div>}
       </div>

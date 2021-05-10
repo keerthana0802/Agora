@@ -7,14 +7,16 @@ import ChatCard from '../../Components/Chat'
 // import VideocamOffIcon from '@material-ui/icons/VideocamOff';
 // import MicIcon from '@material-ui/icons/Mic';
 // import MicOffIcon from '@material-ui/icons/MicOff';
+import Box from '@material-ui/core/Box';
 import AppDashboard from '../../Components/AppDashboard'
 import Footer from '../../Components/Common/Footer'
 import VideoCard from '../../Components/Common/VideoCard'
 import AgoraRTM from 'agora-rtm-sdk';
 // import {Images} from '../../Themes'
-// import ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import _get from 'lodash/get'
 import '../Styles/LayoutStyles.css'
+import './Styles/StudentStyles.css'
 import {parseUrl} from '../../Lib/Utilities'
 
 // var videoProfiles = [
@@ -207,6 +209,10 @@ class Student extends React.Component {
             this.setState({remoteStreams})
           }
         }
+      } else if(json.type === 'screenType') {
+        this.setState({screenType: json.value})
+      } else if(json.type === 'teacherId') {
+        this.setState({teacherId: json.value})
       }
     })
     this.RTMChannel.on('MemberJoined', (memberId) => {
@@ -222,7 +228,9 @@ class Student extends React.Component {
     })
 
   }
-
+  updateScreenType = (screenType) => {
+    this.setState({screenType})
+  }
 
 
   subscribeClientEvents = () => {
@@ -230,8 +238,14 @@ class Student extends React.Component {
       console.log("ConnectionStateChanged =>>", newState,reason )
       if (newState === 'CONNECTED') {
         if(this.RTMClient.getChannelAttributesByKeys) {
-          this.RTMClient.getChannelAttributesByKeys(`${this.channel}`, ['activeSlideId']).then(data => {
+          this.RTMClient.getChannelAttributesByKeys(`${this.channel}`, ['teacherId']).then(data => {
+            let teacherId = _get(data, 'teacherId.value') || ''
+            this.setState({teacherId})
+          })
+          this.RTMClient.getChannelAttributesByKeys(`${this.channel}`, ['activeSlideId','screenType']).then(data => {
             let activeSlideId = _get(data, 'activeSlideId.value') || ''
+            let screenType = _get(data, 'screenType.value') || ''
+            this.updateScreenType(screenType)
             if(!activeSlideId) return
             activeSlideId = JSON.parse(activeSlideId)
             console.log('activeSlideId', activeSlideId)
@@ -468,7 +482,7 @@ class Student extends React.Component {
     let remoteStreams = { ...this.state.remoteStreams };
     let uid = user.uid;
     if (mediaType === "video" && remoteStreams[uid]) {
-      user.videoTrack.play(uid + "");
+      user.videoTrack && user.videoTrack.play(uid + "");
       remoteStreams[uid].videoState = true;
     }
     else if (mediaType === "audio" && remoteStreams[uid]) {
@@ -645,7 +659,7 @@ class Student extends React.Component {
   }
 
   render() {
-    const { remoteStreams, rtmLoggedIn, tuteControls, speakers } = this.state;
+    const { remoteStreams, rtmLoggedIn, tuteControls, speakers, screenType, teacherId } = this.state;
     console.log("streams =>>", remoteStreams);
     console.log("Speaker =>>", speakers);
     let slides = [{
@@ -667,14 +681,25 @@ class Student extends React.Component {
           onClick:  rtmLoggedIn ? this.leaveChannel : this.loginToRTM,
           title: rtmLoggedIn ? 'Leave' : 'Join'}
         ]}>
-      <div className='app-main-container'>
+      <div className={ClassNames('app-main-container', `${screenType}`)} >
         <div className='right-container'>
           <div className="class-container">
             <div className="main-card">
               <div className="rightContainer">
+                {rtmLoggedIn && remoteStreams[teacherId] && <RemoteStream
+                  te
+                  speaking={speakers.indexOf(teacherId) > -1}
+                  key={teacherId}
+                  isTute={this.state.isTute}
+                  onAVChange={this.onAVChange}
+                  tuteControls={tuteControls[this.teacherId]}
+                  stream={remoteStreams[teacherId]}
+                  id={teacherId}
+                />} 
                 <VideoCard id={this.state.uid} ref={this.localVideoView} name={params.name}/>
-                {rtmLoggedIn && Object.keys(remoteStreams).map((item, index) => (
-                  <RemoteStream
+                {rtmLoggedIn && Object.keys(remoteStreams).map((item, index) => {
+                  if(item === teacherId) return null 
+                  return (<RemoteStream
                     speaking={speakers.indexOf(item) > -1}
                     key={item}
                     isTute={this.state.isTute}
@@ -682,22 +707,25 @@ class Student extends React.Component {
                     tuteControls={tuteControls[item]}
                     stream={remoteStreams[item]}
                     id={item}
-                  />
-                ))}
+                  />)
+                })}
               </div>
-               {(rtmLoggedIn && this.state.openChat) && <ChatCard 
-                chatBox={this.state.chatBox}
-                onUpdateChat={this.onUpdateChat}
-                onRef={ref => (this.chatRef = ref)}
-                sendMessage = {this.sendMessage}
-                name={params.name || this.state.uid}
-                userId={this.state.uid}
-                />}
             </div>
+            <Box flexDirection='column' className='slides-chat-container'>
+               {this.state.activeSlideId && <div className ='slides-container'>
+                <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
+              </div>}
+              {(rtmLoggedIn && this.state.openChat) && <ChatCard 
+                  chatBox={this.state.chatBox}
+                  onUpdateChat={this.onUpdateChat}
+                  onRef={ref => (this.chatRef = ref)}
+                  sendMessage = {this.sendMessage}
+                  name={params.name || this.state.uid}
+                  userId={this.state.uid}
+                  />}
+            </Box>
           </div>
-          {this.state.activeSlideId && <div className ='slides-container'>
-            <div className='slide-img' style={{backgroundImage: `url(${slides[this.state.activeSlideId-1].image})`}} />
-          </div>}
+         
           <Footer 
             rtmLoggedIn={rtmLoggedIn}
             btnList={[

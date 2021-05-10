@@ -1,0 +1,20 @@
+.app-main-container {
+  padding: 24px; }
+  .app-main-container .slides-chat-container {
+    width: 30vw;
+    margin-left: 12px;
+    margin-right: 12px; }
+    .app-main-container .slides-chat-container .chatContainer {
+      width: 100%;
+      margin: 0; }
+  .app-main-container.startSession .main-card {
+    position: relative;
+    border: 1px solid;
+    border-radius: 13.1964px;
+    justify-content: flex-end; }
+    .app-main-container.startSession .main-card .rightContainer {
+      width: 250px; }
+      .app-main-container.startSession .main-card .rightContainer .teacherView {
+        position: absolute;
+        width: 100%;
+        left: 0; }

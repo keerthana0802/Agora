@@ -30,3 +30,9 @@
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
     box-sizing: border-box; }
+  .video-container .video-control {
+    position: absolute;
+    bottom: 8px;
+    display: flex; }
+    .video-container .video-control .btn-circle {
+      border-radius: 100%; }

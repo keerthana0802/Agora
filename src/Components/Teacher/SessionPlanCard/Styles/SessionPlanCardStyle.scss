@@ -1,6 +1,54 @@
-.SessionPlanCard-container {
+@import '../../../../Assets/Style/color';
+
+.sessionPlanCard-container {
   background: #FCFCFC;
   box-shadow: 0px 2px 8px rgba(166, 166, 166, 0.25);
   border-radius: 6px;
   width: 55vw;
+  .sessionPlanCard-item {
+    height: calc(100% / 2 - 56px/2 - 16px);
+    margin-bottom: 16px;
+    box-sizing: border-box;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    background: #FCFCFC;
+    // box-shadow: 0px 2px 8px rgb(166 166 166 / 25%);
+    border-radius: 6px;
+    .video-container {
+      position: absolute;
+      right: 0;
+      z-index: 23;
+    }
+    &.videoProfile {
+      .video-container {
+        padding: 8px;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        .video-remoteStream {
+          background: #E0E7EC;
+          border-radius: 2.23378px;
+        }
+        .video-control {
+          bottom: 23px;
+        }
+      }
+    }
+  }
+  .sessionPlanCard-chat-item {
+    .chatContainer {
+      margin: 0;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: unset;
+    }
+  }
+  .bn-selected {
+    color: $color-primary;
+  }
 }

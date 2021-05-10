@@ -1,13 +1,18 @@
 // import {Images} from '../../../Themes'
 import './Styles/VideoCardStyle.css'
-
-function VideoCard({name, id, ref}) {
+import ButtonIcon from '../Footer/ButtonIcon'
+import Box from '@material-ui/core/Box';
+function VideoCard({name, id, ref, showcontrol=false, audio={}, video={}}) {
   return (
     <div className='video-container'>
      <div className={"video-remoteStream"} id={id} ref={ref} />
-      <div className='video-name'>
+      {!!name && <div className='video-name'>
         {name}
-      </div>
+      </div>}
+      {showcontrol && <Box flexDirection='row' className='video-control'>
+        <ButtonIcon {...audio} />
+        <ButtonIcon {...video} />
+      </Box>}
     </div>
   )
 }

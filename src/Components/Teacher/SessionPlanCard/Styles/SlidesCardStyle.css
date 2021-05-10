@@ -1,0 +1,33 @@
+.slides-container {
+  display: flex;
+  padding: 10px;
+  background: white;
+  box-sizing: border-box;
+  resize: horizontal;
+  border: 1px dashed;
+  overflow: auto;
+  max-width: 100%;
+  height: 100%;
+  flex: 1;
+  position: relative; }
+
+.slides-container > .btn-next-prev {
+  position: absolute;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; }
+
+.slides-container > .btn-next-prev button {
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  margin: 10px; }
+
+.slides-container > .slide-img {
+  width: 100%;
+  padding-bottom: 75%;
+  background: gold;
+  background-repeat: no-repeat;
+  background-size: cover; }
