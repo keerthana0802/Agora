@@ -1,0 +1,20 @@
+@import '../../../../Assets/Style/variables';
+.students-container {
+  padding: 24px;
+}
+.card-container {
+  border: 1px solid #D5D5D5;
+  box-sizing: border-box;
+  border-radius: 12px;
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  .title {
+    font-family:$primary-font-normal;
+    font-size: 16px;
+    color: #666666
+  }
+  .button-container {
+    width: auto;
+  }
+}

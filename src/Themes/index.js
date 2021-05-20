@@ -1,3 +1,4 @@
 // @flow
 import Images from './Images'
-export { Images }
+import ThemeColor from './ThemeColor'
+export { Images, ThemeColor }

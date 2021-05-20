@@ -13,9 +13,15 @@ const TeacherScreen = Loadable({
   loading: LodableLoading
 });
 
+const LoginScreen = Loadable({
+  loader: () => import('./Containers/Login'),
+  loading: LodableLoading
+});
+
 const MainRouter = () => (
   <Router>
     <Switch>
+      <Route exact path="/login" component={LoginScreen} />
       <Route exact path="/" component={StudentScreen} />
       <Route exact path="/teacher" component={TeacherScreen} />
     </Switch>

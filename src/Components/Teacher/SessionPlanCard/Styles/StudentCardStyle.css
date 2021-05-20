@@ -1,0 +1,16 @@
+.students-container {
+  padding: 24px; }
+
+.card-container {
+  border: 1px solid #D5D5D5;
+  box-sizing: border-box;
+  border-radius: 12px;
+  padding: 8px 24px;
+  display: flex;
+  align-items: center; }
+  .card-container .title {
+    font-family: Nunito-SemiBold;
+    font-size: 16px;
+    color: #666666; }
+  .card-container .button-container {
+    width: auto; }

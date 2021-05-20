@@ -4,6 +4,7 @@ import Box from '@material-ui/core/Box';
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import SlidesCard from './SlidesCard'
+import StudentsCard from './StudentsCard'
 import VideoCard from '../../Common/VideoCard'
 import ClassNames from 'classnames'
 import _get from 'lodash/get'
@@ -23,7 +24,7 @@ function SessionPlanCard(props) {
           {...props.chatProps}
         />}
         {value === 'metronome' && <Box> metronome</Box>}
-        {value === 'shareScreen' && <Box> shareScreen</Box>}
+        {value === 'students' && <StudentsCard {...props.studentsControl}/>}
       </Box>
      <BottomNavigation
       value={value}

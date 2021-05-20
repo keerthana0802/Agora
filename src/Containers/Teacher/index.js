@@ -772,6 +772,7 @@ class Teacher extends React.Component {
               }
             ]}/>}
             {(rtmLoggedIn && !!isStartSession) && <SessionPlanCard
+              studentsControl={{students: this.state.remoteStreams}}
               videoControl={{
                 audio: {  
                   key: 'mute-icon',
