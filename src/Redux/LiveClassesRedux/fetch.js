@@ -8,23 +8,23 @@ const { Types, Creators } = createActions(
     success: ['params', 'data'],
     failure: ['params', 'error']
   },
-  { prefix: 'CREATE_BATCHE_' }
+  { prefix: 'FETCH_LIVE_CLASSES_' }
 );
 
 export { Types, Creators };
 
 const request = (state: Object, action: Object) =>
-  state.merge({ creating: true, error: null });
+  state.merge({ fetching: true, error: null });
 
 const success = (state: Object, { data }: Object) =>
   state.merge({
-    creating: false,
-    creating_data: data,
+    fetching: false,
+    data,
     error: null
   });
 
 const failure = (state: Object, { error }: Object) =>
-  state.merge({ creating: false, error });
+  state.merge({ fetching: false, error });
 
 export default {
   [Types.REQUEST]: request,

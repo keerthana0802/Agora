@@ -14,7 +14,7 @@ const updateReducers = (store: Object) => {
     .then((localVersion) => {
       if (localVersion !== reducerVersion) {
         console.tron.display({
-          name: 'HOTEL',
+          name: 'sparkstudio',
           value: {
             'Old Version:': localVersion,
             'New Version:': reducerVersion

@@ -9,7 +9,7 @@ const create = (baseURL = Config.apiBaseURL) => {
       'Cache-Control': 'no-cache',
       'Content-Type': 'application/json'
     },
-    withCredentials: true,
+    // withCredentials: true,
     timeout: 300000
   });
 
@@ -44,11 +44,14 @@ const create = (baseURL = Config.apiBaseURL) => {
     }
   });
 
-  const loginUser = ({ params }) => api.post(`/api/v1/authentication/login_by_code`, params);
+  const loginUser = ({ params }) =>
+    api.post(`/api/v1/authentication/login_by_code`, params);
+  const getLiveClasses = ({ id }) => api.get(`/api/v1/live_classes/${id}`);
 
   return {
     setHeader: api.setHeader,
     loginUser,
+    getLiveClasses
   };
 };
 

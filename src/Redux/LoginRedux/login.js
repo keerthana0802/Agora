@@ -24,7 +24,7 @@ const success = (state: Object, { data }: Object) =>
   });
 
 const failure = (state: Object, { error }: Object) =>
-  state.merge({ fetching: false, error });
+  state.merge({ fetching: false, error, data: null });
 
 export default {
   [Types.REQUEST]: request,

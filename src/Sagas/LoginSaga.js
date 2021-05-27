@@ -1,19 +1,15 @@
 import { put, call } from 'redux-saga/effects';
 import _get from 'lodash/get';
 
-export function* loginSaga(entity, apiFunc, data) {
-  let token = _get(data, 'params.access_token') || '';
-  if (token) {
-    // data.params.auth_token = token;
-    // apiFunc.loginapi.setHeader('Authorization', `Bearer ${token}`);
-    // apiFunc.api.setHeader('Authorization', `Bearer ${token}`);
-  }
-  const response = yield call(apiFunc.loginapi.profile, data);
+export function* loginSaga(entity, api, data) {
+  const response = yield call(api.loginUser, data);
   if (response.ok) {
-    let id = _get(response, 'data.id');
-    // apiFunc.api.setHeader('HTTP_X_TNL_USER_ID', id)
-    // apiFunc.loginapi.setHeader('X-TNL-USER-ID', id);
-    // apiFunc.api.setHeader('X-TNL-USER-ID', id);
+    const token = _get(response, 'data.token');
+    const userId = _get(response, 'data.profile.user_id');
+    const profileId = _get(response, 'data.profile.id');
+    api.setHeader('Authorization', token);
+    api.setHeader('X-SSUID', userId);
+    api.setHeader('X-SSPID', profileId);
     yield put(entity.success(data.params, response.data));
   } else {
     yield put(entity.failure(data.params, response.data));

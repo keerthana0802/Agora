@@ -1,15 +1,18 @@
 import { put, call } from 'redux-saga/effects';
-// import { getUser} from './Selectors'
+import { getUser } from './Selectors';
+import _get from 'lodash/get';
 
 export function* entitiesSaga(entity, apiFunc, data) {
-  //  const currentUser = yield select(getUser)
-  //   let {user: {accessToken}} = currentUser
-  //   if(accessToken) {
-  //     if(!data.token) {
-  //      data.token = {}
-  //     }
-  //     data.token['access_token'] = accessToken
-  //   }
+  const currentUser = yield select(getUser);
+  let {
+    data: {}
+  } = currentUser;
+  let token = _get(data, 'token');
+  if (token) {
+    if (!data.params) {
+      data.params = {};
+    }
+  }
   const response = yield call(apiFunc, data);
   if (entity) {
     if (response.ok) {

@@ -23,7 +23,6 @@ export default (rootReducer, rootSaga) => {
     sagaMonitor,
     onError(error) {
       console.log('Error:', error);
-      // window.Raven && window.Raven.captureException(error)
     }
   });
   middleware.push(sagaMiddleware);

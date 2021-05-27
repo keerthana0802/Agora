@@ -1,26 +1,63 @@
-import React, {useEffect}  from 'react';
+import React, { useEffect, useState } from 'react';
 // import _get from 'lodash/get';
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core';
-import './Styles/LoginStyles.css'
+import './Styles/LoginStyles.css';
 import { useDispatch } from 'react-redux';
-import {CreateCreators as LoginCreator} from '../../Redux/LoginRedux'
+import { CreateCreators as LoginCreator } from '../../Redux/LoginRedux';
+import { useRouteQueryParams } from '../../Hooks';
+import { useUserLogin } from './Hooks';
+import Loading from '../../Components/Loading';
 
-// const useStyles = makeStyles((theme) => ({}));
+export default function LoginScreen(props) {
+  const { loading, error, prevLoading } = useUserLogin(props);
+  const dispatch = useDispatch();
+  const [queryParams] = useRouteQueryParams();
+  const [code, setCode] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [fetching, setFetching] = useState(false);
 
-export default function LoginScreen() {
-	const dispatch = useDispatch();
+  useEffect(() => {
+    if (!loading && prevLoading) {
+      if (error) {
+        setErrorMessage(error);
+      }
+      setFetching(loading);
+    }
+  }, [loading, error]);
 
-	// useEffect(() => {
- //    	dispatch(LoginCreator.request({
-	// 	  "aid": "wfeye-ttk3m--9w",
-	// 	  "code": "y4M5qQ"
-	// 	}));
- //  	});
+  const handleCodeEnter = (e) => {
+    if (e.key === 'Enter') {
+      const { token } = queryParams;
+      setFetching(true);
+      dispatch(
+        LoginCreator.request({
+          aid: token,
+          code //y4M5qQ
+        })
+      );
+    }
+  };
+
+  const handleChangeCode = (event) => {
+    if (errorMessage) {
+      setErrorMessage('');
+    }
+    setCode(event.target.value);
+  };
 
   return (
     <Box display="flex" width="100%" height="100%">
-      Enter passcode
+      {fetching && <Loading center />}
+      <input
+        disabled={fetching}
+        type="text"
+        disable
+        value={code}
+        onChange={handleChangeCode}
+        onKeyDown={handleCodeEnter}
+      />
+      {errorMessage && <div>{errorMessage}</div>}
     </Box>
   );
 }
