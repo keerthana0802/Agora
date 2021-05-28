@@ -8,6 +8,7 @@ import { CreateCreators as LoginCreator } from '../../Redux/LoginRedux';
 import { useRouteQueryParams } from '../../Hooks';
 import { useUserLogin } from './Hooks';
 import Loading from '../../Components/Loading';
+import Header from '../../Components/Header';
 
 export default function LoginScreen(props) {
   const { loading, error, prevLoading } = useUserLogin(props);
@@ -47,6 +48,9 @@ export default function LoginScreen(props) {
   };
 
   return (
+    <div> 
+      <div> <Header/></div>
+     
     <Box display="flex" width="100%" height="100%">
       {fetching && <Loading center />}
       <input
@@ -59,5 +63,6 @@ export default function LoginScreen(props) {
       />
       {errorMessage && <div>{errorMessage}</div>}
     </Box>
+    </div>
   );
 }

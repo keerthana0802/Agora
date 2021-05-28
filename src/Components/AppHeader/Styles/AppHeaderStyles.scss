@@ -2,17 +2,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
   .logo {
     width: 170px;
-     height: 64px
+    height: 64px;
   }
   .btn-card {
     display: flex;
     flex: 1;
+    width: 100%;
     justify-content: flex-end;
     padding: 12px 24px;
     border-radius: 24px;
-    box-shadow: 0 2px 6px 0 rgba(91, 22, 170, 0.12), inset 1px 0 3px 0 rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 6px 0 rgba(91, 22, 170, 0.12),
+      inset 1px 0 3px 0 rgba(255, 255, 255, 0.5);
     background-color: #ffffff;
     .btn-row-group {
       display: flex;

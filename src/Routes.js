@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import Loadable from 'react-loadable'
+import Loadable from 'react-loadable';
 // import { withRouter } from 'react-router';
 import LodableLoading from './Containers/LodableLoading';
 
@@ -18,14 +18,25 @@ const LoginScreen = Loadable({
   loading: LodableLoading
 });
 
+const BeforeClassScreen = Loadable({
+  loader: () => import('./Containers/BeforeClass'),
+  loading: LodableLoading
+});
+const WaitingRoomScreen = Loadable({
+  loader: () => import('./Containers/WaitingRoom'),
+  loading: LodableLoading
+});
+
 const MainRouter = () => (
   <Router>
     <Switch>
       <Route exact path="/login" component={LoginScreen} />
       <Route exact path="/" component={StudentScreen} />
       <Route exact path="/teacher" component={TeacherScreen} />
+      <Route exact path="/Beforeclass" component={BeforeClassScreen} />
+      <Route exact path="/Waitingroom" component={WaitingRoomScreen} />
     </Switch>
-   </Router>
-  )
+  </Router>
+);
 
-export default MainRouter
+export default MainRouter;

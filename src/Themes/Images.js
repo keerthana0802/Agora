@@ -12,6 +12,11 @@ const images = {
   sharescreen: require('../Images/sharescreen.svg'),
   videoOff: require('../Images/video-off.svg'),
   video: require('../Images/video.svg'),
-  raisedActive: require('../Images/raised-active.svg')
+  raisedActive: require('../Images/raised-active.svg'),
+  man: require('../Images/before-class.svg'),
+  waiting: require('../Images/waiting-room.svg'),
+  full: require('../Images/full-circle.svg'),
+  half: require('../Images/half-circle.svg'),
+  image: require('../Images/before-screen-logo.svg')
 };
 export default images;
