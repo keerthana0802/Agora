@@ -49,6 +49,9 @@ export default function LoginScreen(props) {
 
   return (
     <div>
+      <div>
+        <Header />
+      </div>
       <Box display="flex" width="100%" height="100%">
         {fetching && <Loading center />}
         <input
