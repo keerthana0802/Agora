@@ -1,7 +1,15 @@
 .app-header {
   display: flex;
   align-items: center;
+<<<<<<< Updated upstream
   justify-content: center; }
+=======
+  justify-content: center;
+  background: #fcfcfc;
+  box-shadow: 12px -12px 16px #c7c7c740, 0px 12px 20px #a6a6a640;
+  border-radius: 34.8545px 34.8545px 0px 0px;
+  width: 100%; }
+>>>>>>> Stashed changes
   .app-header .logo {
     width: 170px;
     height: 64px; }
