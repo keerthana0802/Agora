@@ -43,7 +43,7 @@ export default function WaitingRoom() {
           </div>
           <br></br>
         </div>
-        <div className="waitimg">
+        <div className="waiting">
           <img src={Images.waiting} alt="img" />
           <img className="ell" src={Images.full} alt="spark" />
           <a href="/" className="support">

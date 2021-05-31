@@ -33,8 +33,8 @@ const MainRouter = () => (
       <Route exact path="/login" component={LoginScreen} />
       <Route exact path="/" component={StudentScreen} />
       <Route exact path="/teacher" component={TeacherScreen} />
-      <Route exact path="/Beforeclass" component={BeforeClassScreen} />
-      <Route exact path="/Waitingroom" component={WaitingRoomScreen} />
+      <Route exact path="/before-class" component={BeforeClassScreen} />
+      <Route exact path="/Waiting-room" component={WaitingRoomScreen} />
     </Switch>
   </Router>
 );

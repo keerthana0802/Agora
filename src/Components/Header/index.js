@@ -5,7 +5,7 @@ import './Styles/styles.css';
 function Header() {
   return (
     <div className="header">
-      <img className="logo-img" src={Images.image} alt="spark" />
+      <img className="logo-img" src={Images.logo} alt="spark" />
     </div>
   );
 }

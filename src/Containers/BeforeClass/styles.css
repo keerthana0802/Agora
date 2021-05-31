@@ -78,14 +78,14 @@
   border: none; }
 
 .text {
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: 13px;
   line-height: 120%; }
 
 .text2 {
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 10px;
@@ -116,7 +116,7 @@
   height: 13.75px;
   margin-left: 40px;
   margin-top: -30px;
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 10px;
@@ -131,7 +131,7 @@
   height: 13.75px;
   margin-left: 105px;
   margin-top: -30px;
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 10px;
@@ -146,7 +146,7 @@
   height: 13.75px;
   margin-left: 175px;
   margin-top: -30px;
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 10px;
@@ -158,7 +158,7 @@
 .hour {
   position: absolute;
   margin-top: -56px;
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-weight: normal;
   margin-left: 42px;
@@ -173,7 +173,7 @@
 .mins {
   position: absolute;
   margin-top: -56px;
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-weight: normal;
   margin-left: 108px;
@@ -188,7 +188,7 @@
 .secs {
   position: absolute;
   margin-top: -56px;
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-weight: normal;
   margin-left: 176px;
@@ -206,7 +206,7 @@
   height: 61px;
   left: 30px;
   top: 38px;
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-weight: bold;
   font-size: 45px;
@@ -219,7 +219,7 @@
   height: 22px;
   left: 30px;
   top: 120px;
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-size: 16px;
   line-height: 22px;
@@ -231,7 +231,7 @@
   height: 66px;
   left: 30px;
   top: 173px;
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-weight: bold;
   font-size: 16px;
@@ -244,7 +244,7 @@
   height: 57px;
   left: 30px;
   top: 286px;
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 14px;
@@ -258,7 +258,7 @@
   top: 79.81%;
   width: 300px;
   bottom: 20.97%;
-  font-family: "Nunito Sans", sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 12px;
